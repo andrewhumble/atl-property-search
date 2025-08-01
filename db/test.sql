@@ -56,3 +56,10 @@ SELECT bedrooms, bathrooms FROM properties_unique WHERE bathrooms IS NULL LIMIT 
 
 -- Add back the index
 CREATE INDEX idx_bathrooms ON properties_unique(bathrooms);
+
+PRAGMA journal_mode=WAL;
+
+PRAGMA wal_checkpoint(TRUNCATE);
+
+PRAGMA journal_mode;
+
