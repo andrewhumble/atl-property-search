@@ -1,9 +1,12 @@
-import Database from 'better-sqlite3';
 import { LRUCache } from 'lru-cache';
 import { getQpublicUrl, getGisUrl } from '@/lib/utils';
 import { NextResponse } from 'next/server';
+import { createClient } from '@libsql/client';
 
-const db = new Database('db/properties.db', { readonly: true });
+const client = createClient({
+    url: process.env.TURSO_DATABASE_URL,
+    authToken: process.env.TURSO_AUTH_TOKEN
+});
 
 const cache = new LRUCache({
     max: 100, // Max number of unique filter combinations to cache
@@ -74,7 +77,8 @@ export async function GET(request) {
 
     if (!rows) {
         const { sql, values } = buildQuery(params);
-        rows = db.prepare(sql).all(values);
+        const result = await client.execute(sql, values);
+        rows = result.rows;
         cache.set(cacheKey, rows);
     }
 
