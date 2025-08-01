@@ -1,81 +1,42 @@
 "use client";
 
-import { FC } from "react";
-import { VisuallyHidden } from "@react-aria/visually-hidden";
-import { SwitchProps, useSwitch } from "@heroui/switch";
+import { FC, useState, useEffect } from "react";
+import { Switch } from "antd";
 import { useTheme } from "next-themes";
-import { useIsSSR } from "@react-aria/ssr";
-import clsx from "clsx";
 
 import { SunFilledIcon, MoonFilledIcon } from "@/components/icons";
 
 export interface ThemeSwitchProps {
   className?: string;
-  classNames?: SwitchProps["classNames"];
 }
 
-export const ThemeSwitch: FC<ThemeSwitchProps> = ({
-  className,
-  classNames,
-}) => {
+export const ThemeSwitch: FC<ThemeSwitchProps> = ({ className }) => {
   const { theme, setTheme } = useTheme();
-  const isSSR = useIsSSR();
+  const [mounted, setMounted] = useState(false);
 
-  const onChange = () => {
-    theme === "light" ? setTheme("dark") : setTheme("light");
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  const onChange = (checked: boolean) => {
+    setTheme(checked ? "light" : "dark");
   };
 
-  const {
-    Component,
-    slots,
-    isSelected,
-    getBaseProps,
-    getInputProps,
-    getWrapperProps,
-  } = useSwitch({
-    isSelected: theme === "light" || isSSR,
-    "aria-label": `Switch to ${theme === "light" || isSSR ? "dark" : "light"} mode`,
-    onChange,
-  });
+  // Prevent hydration mismatch by not rendering until mounted
+  if (!mounted) {
+    return <div className={className} style={{ width: 32, height: 16 }} />;
+  }
+
+  const isLight = theme === "light";
 
   return (
-    <Component
-      {...getBaseProps({
-        className: clsx(
-          "px-px transition-opacity hover:opacity-80 cursor-pointer",
-          className,
-          classNames?.base,
-        ),
-      })}
-    >
-      <VisuallyHidden>
-        <input {...getInputProps()} />
-      </VisuallyHidden>
-      <div
-        {...getWrapperProps()}
-        className={slots.wrapper({
-          class: clsx(
-            [
-              "w-auto h-auto",
-              "bg-transparent",
-              "rounded-lg",
-              "flex items-center justify-center",
-              "group-data-[selected=true]:bg-transparent",
-              "!text-default-500",
-              "pt-px",
-              "px-0",
-              "mx-0",
-            ],
-            classNames?.wrapper,
-          ),
-        })}
-      >
-        {!isSelected || isSSR ? (
-          <SunFilledIcon size={22} />
-        ) : (
-          <MoonFilledIcon size={22} />
-        )}
-      </div>
-    </Component>
+    <Switch
+      checked={isLight}
+      onChange={onChange}
+      checkedChildren={<SunFilledIcon size={16} />}
+      unCheckedChildren={<MoonFilledIcon size={16} />}
+      className={className}
+      aria-label={`Switch to ${isLight ? "dark" : "light"} mode`}
+    />
   );
 };
