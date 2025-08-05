@@ -10,7 +10,7 @@ export default function RangeFilter({ name, min, max, value, onMinChange, onMaxC
     onMaxChange: (newValue: number | null) => void
 }) {
     const getMinParser = useCallback(() => {
-        return name === 'Appraised Value' ? (value: string | undefined): number => {
+        return name === 'Total Appraised Value' ? (value: string | undefined): number => {
             if (value === null || value === undefined || value === 'Any' || value === '') return 0;
             return Number(value.replace(/\$\s?|(,*)/g, ''))
         } : (value: string | undefined): number => {
@@ -20,7 +20,7 @@ export default function RangeFilter({ name, min, max, value, onMinChange, onMaxC
     }, [name]);
 
     const getMaxParser = useCallback(() => {
-        return name === 'Appraised Value' ? (value: string | undefined): number => {
+        return name === 'Total Appraised Value' ? (value: string | undefined): number => {
             if (value === null || value === undefined || value === 'Any' || value === '') return 0;
             return Number(value.replace(/\$\s?|(,*)/g, ''))
         } : (value: string | undefined): number => {
@@ -30,7 +30,7 @@ export default function RangeFilter({ name, min, max, value, onMinChange, onMaxC
     }, [name]);
 
     const getFormatter = useCallback(() => {
-        return name === 'Appraised Value' ? (value: number | null | undefined | string) => {
+        return name === 'Total Appraised Value' ? (value: number | null | undefined | string) => {
             if (value === null || value === undefined || value === '' || value === '0') return '';
             return `$ ${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')
         } : (value: number | null | undefined | string) => {

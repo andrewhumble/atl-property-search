@@ -6,7 +6,7 @@ import { FilterValues } from "@/types";
 interface SearchSuggestion {
     address: string;
     parcel_id: string;
-    county: string;
+    owner_name: string;
 }
 
 export default function TargetSearch({ onSearch }: { onSearch: (filters: FilterValues) => void }) {
@@ -66,7 +66,7 @@ export default function TargetSearch({ onSearch }: { onSearch: (filters: FilterV
             try {
                 const queryParams = new URLSearchParams();
                 queryParams.append('target', query.trim());
-                queryParams.append('limit', '10'); // Limit to 10 results for suggestions
+                queryParams.append('limit', '1000'); // Limit to 10 results for suggestions
 
                 const response = await fetch(`/api/properties?${queryParams.toString()}`);
                 const data = await response.json();
@@ -74,7 +74,7 @@ export default function TargetSearch({ onSearch }: { onSearch: (filters: FilterV
                 const searchSuggestions: SearchSuggestion[] = (data.features || []).map((feature: any) => ({
                     address: feature.properties.address,
                     parcel_id: feature.properties.parcel_id,
-                    county: feature.properties.county
+                    owner_name: feature.properties.owner_name
                 }));
 
                 setSuggestions(searchSuggestions);
@@ -103,8 +103,24 @@ export default function TargetSearch({ onSearch }: { onSearch: (filters: FilterV
     }, [debouncedSearch]);
 
     // Handle suggestion selection
-    const handleSuggestionSelect = useCallback((suggestion: SearchSuggestion) => {
-        setSearchText(suggestion.address);
+    const handleSuggestionSelect = useCallback((suggestion: SearchSuggestion, searchText: string) => {
+        if (searchText.includes(suggestion.address)) {
+            setSearchText(suggestion.address);
+        } else if (searchText.includes(suggestion.parcel_id)) {
+            setSearchText(suggestion.parcel_id);
+        } else {
+            // Check if search text matches any word in owner name (wildcard matching)
+            const searchWords = searchText.toLowerCase().split(/\s+/).filter(word => word.length > 0);
+            const ownerWords = suggestion.owner_name.toLowerCase().split(/\s+/);
+            
+            const hasMatch = searchWords.some(searchWord => 
+                ownerWords.some(ownerWord => ownerWord.includes(searchWord))
+            );
+            
+            if (hasMatch) {
+                setSearchText(suggestion.owner_name);
+            }
+        }
         setShowSuggestions(false);
         setSuggestions([]);
         setSelectedIndex(-1);
@@ -146,7 +162,7 @@ export default function TargetSearch({ onSearch }: { onSearch: (filters: FilterV
             case 'Enter':
                 e.preventDefault();
                 if (selectedIndex >= 0 && selectedIndex < suggestions.length) {
-                    handleSuggestionSelect(suggestions[selectedIndex]);
+                    handleSuggestionSelect(suggestions[selectedIndex], searchText);
                 } else if (searchText.trim()) {
                     handleTargetSearch(searchText);
                 }
@@ -159,9 +175,9 @@ export default function TargetSearch({ onSearch }: { onSearch: (filters: FilterV
     }, [showSuggestions, suggestions, selectedIndex, searchText, handleSuggestionSelect, handleTargetSearch]);
 
     return (
-        <div className="w-1/4 search-container relative flex items-center">
+        <div className="search-container relative flex items-center">
             <Input
-                placeholder="Search by address or parcel ID"
+                placeholder="Address, Parcel ID, or Owner"
                 value={searchText}
                 onChange={handleInputChange}
                 onKeyDown={handleKeyDown}
@@ -184,12 +200,12 @@ export default function TargetSearch({ onSearch }: { onSearch: (filters: FilterV
                                 <List.Item
                                     className={`px-3 py-2 cursor-pointer hover:bg-gray-50 ${index === selectedIndex ? 'bg-blue-50' : ''
                                         }`}
-                                    onClick={() => handleSuggestionSelect(suggestion)}
+                                    onClick={() => handleSuggestionSelect(suggestion, searchText)}
                                 >
                                     <div className="w-full">
                                         <div className="font-medium text-sm">{suggestion.address}</div>
                                         <div className="text-xs">
-                                            Parcel: {suggestion.parcel_id} • {suggestion.county}
+                                            Parcel: {suggestion.parcel_id} • Owner: {suggestion.owner_name}
                                         </div>
                                     </div>
                                 </List.Item>

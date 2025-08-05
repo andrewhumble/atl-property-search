@@ -6,22 +6,21 @@ export default function SliderFilter({
     min, 
     max, 
     value, 
-    onMinChange, 
-    onMaxChange 
+    onChange 
 }: {
     name: string, 
     min: number, 
     max: number
     value: [number, number],
-    onMinChange: (newValue: number) => void,
-    onMaxChange: (newValue: number) => void
+    onChange: (newValue: [number, number]) => void
 }) {
     const handleRangeChange = useCallback((newValue: number | number[]) => {
         if (Array.isArray(newValue) && newValue.length === 2) {
-            onMinChange(newValue[0]);
-            onMaxChange(newValue[1]);
+            const [newMin, newMax] = newValue;
+            // Update the entire range at once
+            onChange([newMin, newMax]);
         }
-    }, [onMinChange, onMaxChange]);
+    }, [onChange, name, value]);
 
     return (
         <div className="w-full space-y-4">

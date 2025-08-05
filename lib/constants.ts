@@ -2,8 +2,16 @@ import { Filter } from "@/types";
 
 export const filters: Filter[] = [
     {
-        label: "Appraised Value",
-        key: "appraised_value",
+        label: "Total Appraised Value",
+        key: "total_appraised_value",
+        type: "range",
+        min: 0,
+        max: 100000000,
+        defaultValue: [null, null]
+    },
+    {
+        label: "Land Appraised Value",
+        key: "land_appraised_value",
         type: "range",
         min: 0,
         max: 100000000,
@@ -36,7 +44,39 @@ export const filters: Filter[] = [
             { label: "5+", value: 5 },
         ],
         defaultValue: 0
-    }
+    },
+    {
+        label: "Square Feet",
+        key: "sqft",
+        type: "range",
+        min: 0,
+        max: 10000,
+        defaultValue: [null, null]
+    },
+    {
+        label: "Acreage",
+        key: "acres",
+        type: "range",
+        min: 0,
+        max: 10,
+        defaultValue: [null, null]
+    },
+    {
+        label: "Year Built",
+        key: "year_built",
+        type: "slider",
+        min: 1900,
+        max: 2025,
+        defaultValue: [1900, 2025]
+    },
+    {
+        label: "Last Sale Year",
+        key: "last_sale_year",
+        type: "slider",
+        min: 1974,
+        max: 2025,
+        defaultValue: [1974, 2025]
+    },
 ]
 
 export const advancedFilters: Filter[] = [
@@ -68,8 +108,8 @@ export const advancedFilters: Filter[] = [
         label: "Last Sale Year",
         key: "last_sale_year",
         type: "slider",
-        min: 1900,
+        min: 1974,
         max: 2025,
-        defaultValue: [1900, 2025]
+        defaultValue: [1974, 2025]
     }
 ]

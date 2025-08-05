@@ -23,13 +23,13 @@ const getRangeDisplayText = (filter: Filter, value: (number | null)[]): string =
   
   // Both values are set
   if (min !== null && min !== undefined && max !== null && max !== undefined) {
-    const formatter = filter.label === 'Appraised Value' ? formatAppraisedValue : (val: number) => val.toString();
+    const formatter = filter.key === 'total_appraised_value' ? formatAppraisedValue : (val: number) => val.toString();
     return `${formatter(min)} - ${formatter(max)}`;
   }
   
   // Only min is set
   if (min !== null && min !== undefined) {
-    const formatter = filter.label === 'Appraised Value' 
+    const formatter = filter.key === 'total_appraised_value' 
       ? (val: number) => `${formatAppraisedValue(val)}+`
       : (val: number) => `${val}+`;
     return formatter(min);
@@ -37,7 +37,7 @@ const getRangeDisplayText = (filter: Filter, value: (number | null)[]): string =
   
   // Only max is set
   if (max !== null && max !== undefined) {
-    const formatter = filter.label === 'Appraised Value'
+    const formatter = filter.key === 'total_appraised_value'
       ? (val: number) => `${formatAppraisedValue(val)}-`
       : (val: number) => `${val}-`;
     return formatter(max);
@@ -128,17 +128,9 @@ export default function FilterItem({
         onChange?.(updatedValues);
     }, [value, onChange]);
 
-    const handleSliderMinChange = useCallback((newValue: number) => {
-        const values = value as [number, number];
-        const updatedValues: [number, number] = [newValue, values[1]];
-        onChange?.(updatedValues);
-    }, [value, onChange]);
-
-    const handleSliderMaxChange = useCallback((newValue: number) => {
-        const values = value as [number, number];
-        const updatedValues: [number, number] = [values[0], newValue];
-        onChange?.(updatedValues);
-    }, [value, onChange]);
+    const handleSliderChange = useCallback((newValue: [number, number]) => {
+        onChange?.(newValue);
+    }, [onChange]);
 
     const dropdownContent = (
         <div className="bg-white p-4 rounded-lg shadow-lg min-w-64">
@@ -159,8 +151,7 @@ export default function FilterItem({
                     min={filter.min}
                     max={filter.max}
                     value={value as [number, number]}
-                    onMinChange={handleSliderMinChange}
-                    onMaxChange={handleSliderMaxChange}
+                    onChange={handleSliderChange}
                 />
             )}
             {filter.type === "selection" && (
@@ -177,8 +168,13 @@ export default function FilterItem({
         if (filter.type === "range") {
             const values = value as (number | null)[];
             return values.every((val, index) => val === filter.defaultValue[index]);
+        } else if (filter.type === "slider") {
+            const values = value as [number, number];
+            return values[0] === filter.defaultValue[0] && values[1] === filter.defaultValue[1];
+        } else if (filter.type === "selection") {
+            return value === filter.defaultValue;
         }
-        return value === filter.defaultValue;
+        return false;
     }
 
     return (

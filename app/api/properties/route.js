@@ -2,6 +2,7 @@ import { LRUCache } from 'lru-cache';
 import { getQpublicUrl, getGisUrl } from '@/lib/utils';
 import { NextResponse } from 'next/server';
 import { createClient } from '@libsql/client';
+import { filters } from '@/lib/constants';
 
 const client = createClient({
     url: process.env.TURSO_DATABASE_URL,
@@ -18,41 +19,50 @@ function buildQuery(params) {
     const values = {};
 
     if (params.target) {
-        conditions.push('address LIKE @target OR parcel_id LIKE @target');
+        const owner_words = params.target.split(' ').filter(word => word.length > 0);
+        const owner_conditions = owner_words.map((word, index) => `owner_name LIKE @owner_word_${index}`);
+        conditions.push(`address LIKE @target OR parcel_id LIKE @target OR (${owner_conditions.join(' AND ')})`);
         values.target = `%${params.target}%`;
+        owner_words.forEach((word, index) => {
+            values[`owner_word_${index}`] = `%${word}%`;
+        });
     } else {
-        if (params.appraised_value_min) {
-            conditions.push('total_appraised_value >= @appraisedValueMin');
-            values.appraisedValueMin = Number(params.appraised_value_min);
-        }
-        if (params.appraised_value_max) {
-            conditions.push('total_appraised_value <= @appraisedValueMax');
-            values.appraisedValueMax = Number(params.appraised_value_max);
-        }
-        if (params.bedrooms) {
-            conditions.push('bedrooms >= @bedrooms');
-            values.bedrooms = Number(params.bedrooms);
-        }
-        if (params.bathrooms) {
-            conditions.push('bathrooms >= @bathrooms');
-            values.bathrooms = Number(params.bathrooms);
-        }
-        if (params.sqft_min) {
-            conditions.push('sqft >= @sqftMin');
-            values.sqftMin = Number(params.sqft_min);
-        }
-        if (params.sqft_max) {
-            conditions.push('sqft <= @sqftMax');
-            values.sqftMax = Number(params.sqft_max);
-        }
-        if (params.acres_min) {
-            conditions.push('acres >= @acresMin');
-            values.acresMin = Number(params.acres_min);
-        }
-        if (params.acres_max) {
-            conditions.push('acres <= @acresMax');
-            values.acresMax = Number(params.acres_max);
-        }
+        // Use the existing filter configuration from constants.ts to build the query
+        filters.forEach(filter => {
+            if (filter.type === 'range') {
+                const minValue = params[`${filter.key}_min`];
+                const maxValue = params[`${filter.key}_max`];
+                
+                if (minValue && !isNaN(Number(minValue))) {
+                    const paramName = `${filter.key}_min`;
+                    conditions.push(`${filter.key} >= @${paramName}`);
+                    values[paramName] = Number(minValue);
+                }
+                if (maxValue && !isNaN(Number(maxValue))) {
+                    const paramName = `${filter.key}_max`;
+                    conditions.push(`${filter.key} <= @${paramName}`);
+                    values[paramName] = Number(maxValue);
+                }
+            } else if (filter.type === 'selection') {
+                const value = params[filter.key];
+                if (value && !isNaN(Number(value)) && Number(value) > 0) {
+                    conditions.push(`${filter.key} >= @${filter.key}`);
+                    values[filter.key] = Number(value);
+                }
+            } else if (filter.type === 'slider') {
+                const minValue = params[`${filter.key}_min`];
+                const maxValue = params[`${filter.key}_max`];
+                
+                if (minValue && !isNaN(Number(minValue))) {
+                    conditions.push(`${filter.key} >= @${filter.key}_min`);
+                    values[`${filter.key}_min`] = Number(minValue);
+                }
+                if (maxValue && !isNaN(Number(maxValue))) {
+                    conditions.push(`${filter.key} <= @${filter.key}_max`);
+                    values[`${filter.key}_max`] = Number(maxValue);
+                }
+            }
+        });
     }
 
     let sql = `SELECT * FROM properties_unique WHERE ${conditions.join(' AND ')}`;
@@ -63,6 +73,8 @@ function buildQuery(params) {
         if (limit > 0 && limit <= 100) { // Sanity check: max 100 results
             sql += ` LIMIT ${limit}`;
         }
+    } else {
+        sql += ` LIMIT 5000`;
     }
 
     return { sql, values };
