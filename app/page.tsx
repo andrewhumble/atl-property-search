@@ -47,7 +47,7 @@ export default function Home() {
   const clearAllFilters = useCallback(() => {
     [...filters, ...advancedFilters].forEach(filter => {
       if (filter.type === "range") {
-        const defaultValues = filter.defaultValue as number[];
+        const defaultValues = filter.defaultValue as [number | null, number | null];
         setFilterValues(prev => ({ ...prev, [filter.key]: defaultValues }));
       } else if (filter.type === "slider") {
         const defaultValues = filter.defaultValue as [number, number];
@@ -84,7 +84,7 @@ export default function Home() {
         )}
       </AnimatePresence>
       <Navbar onSearch={handleSearch} />
-      <div className="flex flex-1 px-12">
+      <div className="flex flex-1 px-4 sm:px-12">
         <MapContainer 
           initialFeatures={initialFeatures} 
           onToggle={() => setIsSideBarOpen(!isSideBarOpen)}

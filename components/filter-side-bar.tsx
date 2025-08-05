@@ -1,7 +1,7 @@
 import { motion } from "framer-motion";
 import { XIcon } from "lucide-react";
 import FilterItem from "./filter-item";
-import { advancedFilters } from "@/lib/constants";
+import { filters } from "@/lib/constants";
 import { FilterValues, FilterValue } from "@/types";
 import { CloseOutlined } from "@ant-design/icons";
 import { Button } from "antd";
@@ -25,10 +25,10 @@ export default function FilterSideBar({
 }: FilterSideBarProps) {
     return (
         <motion.div
-            className="absolute top-0 left-0 w-1/4 h-full bg-white z-50 shadow-lg"
-            initial={{ x: "-100%" }}
-            animate={{ x: 0 }}
-            exit={{ x: "-100%" }}
+            className="absolute top-0 left-0 w-full h-full bg-white z-50 shadow-lg"
+            initial={{ y: "-100%" }}
+            animate={{ y: 0 }}
+            exit={{ y: "-100%" }}
             transition={{
                 type: "spring",
                 stiffness: 300,
@@ -43,8 +43,8 @@ export default function FilterSideBar({
             </button>
             <div className="p-8 py-16 flex flex-col gap-4 h-full justify-between">
                 <div className="flex flex-col gap-6">
-                    <h2 className="text-xl font-bold pb-4">Advanced Filters</h2>
-                    {advancedFilters.map((filter) => (
+                    <h2 className="text-xl font-bold pb-4">Filters</h2>
+                    {filters.map((filter) => (
                         <FilterItem
                             key={filter.key}
                             filter={filter}
@@ -55,7 +55,7 @@ export default function FilterSideBar({
                         />
                     ))}
                 </div>
-                <div className="flex flex-col gap-3">
+                <div className="flex gap-3">
                     <Button
                         variant="outlined"
                         color={`${hasNonDefaultFilters ? "danger" : "default"}`}
@@ -66,7 +66,7 @@ export default function FilterSideBar({
                         <CloseOutlined />
                         Clear
                     </Button>
-                    <Button variant="solid" color="default" className="w-full" onClick={() => onSearch(filterValues)}>Search</Button>
+                    <Button variant="solid" color="primary" className="w-full" onClick={() => onSearch(filterValues)}>Apply</Button>
                 </div>
             </div>
         </motion.div>
