@@ -179,7 +179,9 @@ export default function FilterItem({
 
     return (
         <div className="flex flex-col">
-            <span className="text-xs mb-1">{filter.label}</span>
+            <span className="text-sm mb-1">
+                {filter.label}
+            </span>
             <Dropdown
                 overlay={dropdownContent}
                 trigger={['click']}
@@ -194,7 +196,7 @@ export default function FilterItem({
                         color={`${isDefault(filter, value) ? "default" : "primary"}`}
                         style={{ borderRadius: "0" }}
                     >
-                        <span className="flex-1 text-left">{displayText}</span>
+                        <span className="flex-1 text-left text-md">{displayText}</span>
                         <DownOutlined className="ml-auto" />
                     </Button>
                 </div>

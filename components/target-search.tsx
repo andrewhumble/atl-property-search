@@ -177,7 +177,7 @@ export default function TargetSearch({ onSearch }: { onSearch: (filters: FilterV
     return (
         <div className="search-container relative flex items-center">
             <Input
-                placeholder="Address, Parcel ID, or Owner"
+                placeholder="Address, Parcel ID, or Owner Name"
                 value={searchText}
                 onChange={handleInputChange}
                 onKeyDown={handleKeyDown}

@@ -1,4 +1,4 @@
-import React, { useCallback, useState } from "react";
+import React, { useCallback, useState, useEffect, useRef } from "react";
 import FilterItem from "@/components/filter-item";
 import { Button } from "antd";
 import { CloseOutlined } from "@ant-design/icons";
@@ -6,7 +6,7 @@ import { filters } from "@/lib/constants";
 import { FilterValues, FilterValue } from "@/types";
 import { SlidersHorizontalIcon } from "lucide-react";
 import TargetSearch from "@/components/target-search";
-import { Loader2 } from "lucide-react";
+import { Loader2, ChevronDown } from "lucide-react";
 
 interface FilterBarProps {
   onSearch: (filters: FilterValues) => void;
@@ -27,6 +27,9 @@ export default function FilterBar({
   onClearFilters,
   isLoading
 }: FilterBarProps) {
+  const [showDownArrow, setShowDownArrow] = useState(false);
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
+
   const handleSearch = useCallback(() => {
     const searchFilters: FilterValues = {};
 
@@ -65,32 +68,77 @@ export default function FilterBar({
     onToggle();
   }, [onToggle]);
 
+  // Check scroll position and show/hide arrow
+  useEffect(() => {
+    const handleScroll = () => {
+      if (scrollContainerRef.current) {
+        const { scrollTop, scrollHeight, clientHeight } = scrollContainerRef.current;
+        const isAtBottom = scrollTop + clientHeight >= scrollHeight - 10; // 10px tolerance
+        setShowDownArrow(!isAtBottom && scrollHeight > clientHeight);
+      }
+    };
+
+    const container = scrollContainerRef.current;
+    if (container) {
+      container.addEventListener('scroll', handleScroll);
+      // Check initial state
+      handleScroll();
+    }
+
+    return () => {
+      if (container) {
+        container.removeEventListener('scroll', handleScroll);
+      }
+    };
+  }, [filterValues]); // Re-check when filters change
+
+  const scrollToBottom = () => {
+    if (scrollContainerRef.current) {
+      scrollContainerRef.current.scrollTo({
+        top: scrollContainerRef.current.scrollHeight,
+        behavior: 'smooth'
+      });
+    }
+  };
+
   return (
-    <div className="w-full bg-primary rounded-2xl flex flex-col gap-4 md:pr-4 z-10 h-full">
+    <div className="w-full bg-primary rounded-2xl flex flex-col gap-3 md:pr-4 z-10 h-full">
       {/* Search at top */}
       <TargetSearch onSearch={onSearch} />
 
       <div className="border-t border-gray-200 my-2 hidden md:block" />
 
       {/* Filters expand + scroll */}
-      <div className="hidden md:flex flex-col gap-4 flex-grow overflow-y-auto min-h-0">
-        <div className="flex flex-col gap-4">
-          {filters.map((filter) => (
-            <div className="w-full" key={filter.key}>
-              <FilterItem
-                filter={filter}
-                value={filterValues[filter.key] as FilterValue}
-                onChange={(newValue: number | (number | null)[]) => {
-                  onFilterChange(filter.key, newValue);
-                }}
-              />
-            </div>
-          ))}
+      <div className="hidden md:flex flex-col 3 flex-grow relative">
+        <div 
+          ref={scrollContainerRef}
+          className="flex flex-col gap-3 overflow-y-auto max-h-[calc(100vh-10rem)]"
+        >
+          <div className="flex flex-col gap-3">
+            {filters.map((filter) => (
+              <div className="w-full" key={filter.key}>
+                <FilterItem
+                  filter={filter}
+                  value={filterValues[filter.key] as FilterValue}
+                  onChange={(newValue: number | (number | null)[]) => {
+                    onFilterChange(filter.key, newValue);
+                  }}
+                />
+              </div>
+            ))}
+          </div>
         </div>
+        
+        {/* Floating down arrow */}
+        {/* {showDownArrow && (
+          <div className="absolute bottom-1 left-1/2 transform -translate-x-1/2 bg-gray-200 opacity-40 bg-gradient-to-b from-white to-gray-300 rounded-full p-2 shadow-lg border border-gray-200 cursor-pointer" onClick={scrollToBottom}>
+            <ChevronDown className="w-4 h-4 text-gray-600" onClick={scrollToBottom} />
+          </div>
+        )} */}
       </div>
 
       {/* Sticky action buttons at bottom */}
-      <div className="hidden md:flex flex-col gap-3 mt-auto">
+      <div className="hidden md:flex gap-3 mt-auto">
         <Button
           className="w-full"
           variant="outlined"

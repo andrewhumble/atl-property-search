@@ -3,10 +3,18 @@ import { Loader } from '@googlemaps/js-api-loader';
 import { MarkerClusterer, SuperClusterAlgorithm } from '@googlemaps/markerclusterer';
 import { PropertyFeature } from '@/types';
 import { createPopupContent } from '@/lib/map-utils';
+
 interface GoogleMapViewProps {
   features: PropertyFeature[];
   shouldAutoOpenPopup: boolean;
 }
+
+const GEORGIA_BOUNDS = {
+  north: 35.000,
+  south: 32.500,
+  west: -85.000,
+  east: -82.500,
+};
 
 export default function GoogleMapView({ features, shouldAutoOpenPopup }: GoogleMapViewProps) {
   const mapRef = useRef<HTMLDivElement>(null);
@@ -57,7 +65,11 @@ export default function GoogleMapView({ features, shouldAutoOpenPopup }: GoogleM
         if (mapRef.current) {
           console.log('Creating map instance...');
           const map = new google.maps.Map(mapRef.current, {
-            center: { lat: 33.769, lng: -84.388 }, // Atlanta
+            center: { lat: 33.769, lng: -84.388 }, // Atlanta,
+            restriction: {
+              latLngBounds: GEORGIA_BOUNDS,
+              strictBounds: false,
+            },
             zoom: 11,
             mapTypeId: google.maps.MapTypeId.ROADMAP,
             mapTypeControl: true,

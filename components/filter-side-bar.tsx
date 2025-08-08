@@ -41,7 +41,7 @@ export default function FilterSideBar({
             >
                 <XIcon className="w-4 h-4" />
             </button>
-            <div className="p-8 py-16 flex flex-col gap-4 h-full justify-between">
+            <div className="p-8 py-16 flex flex-col gap-3 h-full justify-between">
                 <div className="flex flex-col gap-6">
                     <h2 className="text-xl font-bold pb-4">Filters</h2>
                     {filters.map((filter) => (

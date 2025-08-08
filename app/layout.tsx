@@ -1,6 +1,7 @@
 import "@/styles/globals.css";
 import { Metadata, Viewport } from "next";
 import clsx from "clsx";
+import { GeistSans } from 'geist/font/sans';
 
 import { Providers } from "./providers";
 
@@ -31,7 +32,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html suppressHydrationWarning lang="en" className="h-full">
+    <html suppressHydrationWarning lang="en" className={`h-full ${GeistSans.variable}`}>
       <head />
       <body
         className={clsx(

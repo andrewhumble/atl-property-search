@@ -76,11 +76,11 @@ export default function MapContainer({
     return (
         <div className="flex md:flex-row flex-col w-full">
             {/* Sidebar for sm and larger screens */}
-            <div className="hidden md:flex md:flex-col md:w-80 lg:w-96 bg-white border-r border-gray-200 p-4">
+            <div className="hidden md:flex md:flex-col md:w-80 lg:w-96 bg-white">
                 {memoizedFilterBar}
             </div>
 
-            {/* Mobile filter bar (top) - only visible on xs screens */}
+            {/* Mobile filter bar (top) - only visible on xs creens */}
             <div className="md:hidden w-full">
                 {memoizedFilterBar}
             </div>

@@ -8,7 +8,7 @@ import Navbar from "@/components/navbar";
 import { searchProperties } from "@/lib/search-utils";
 import FilterSideBar from "@/components/filter-side-bar";
 import { AnimatePresence, motion } from "framer-motion";
-import { filters, advancedFilters } from "@/lib/constants";
+import { filters } from "@/lib/constants";
 
 export default function Home() {
   const [initialFeatures, setInitialFeatures] = useState<PropertyFeature[]>([]);
@@ -17,7 +17,7 @@ export default function Home() {
   
   // Initialize filter values to their default values
   const [filterValues, setFilterValues] = useState<FilterValues>(
-    [...filters, ...advancedFilters].reduce((acc, filter) => {
+    filters.reduce((acc, filter) => {
       if (filter.type === "range") {
         const defaultValue = filter.defaultValue as [number | null, number | null];
         acc[filter.key] = [defaultValue[0] ?? null, defaultValue[1] ?? null];
@@ -45,7 +45,7 @@ export default function Home() {
   }, []);
 
   const clearAllFilters = useCallback(() => {
-    [...filters, ...advancedFilters].forEach(filter => {
+    filters.forEach(filter => {
       if (filter.type === "range") {
         const defaultValues = filter.defaultValue as [number | null, number | null];
         setFilterValues(prev => ({ ...prev, [filter.key]: defaultValues }));
@@ -84,7 +84,7 @@ export default function Home() {
         )}
       </AnimatePresence>
       <Navbar onSearch={handleSearch} />
-      <div className="flex flex-1 px-4 sm:px-12">
+      <div className="flex flex-1 px-4 sm:px-12 lg:px-16">
         <MapContainer 
           initialFeatures={initialFeatures} 
           onToggle={() => setIsSideBarOpen(!isSideBarOpen)}

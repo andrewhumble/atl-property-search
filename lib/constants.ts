@@ -78,38 +78,3 @@ export const filters: Filter[] = [
         defaultValue: [1974, 2025]
     },
 ]
-
-export const advancedFilters: Filter[] = [
-    {
-        label: "Square Feet",
-        key: "sqft",
-        type: "range",
-        min: 0,
-        max: 10000,
-        defaultValue: [null, null]
-    },
-    {
-        label: "Acreage",
-        key: "acres",
-        type: "range",
-        min: 0,
-        max: 10,
-        defaultValue: [null, null]
-    },
-    {
-        label: "Year Built",
-        key: "year_built",
-        type: "slider",
-        min: 1900,
-        max: 2025,
-        defaultValue: [1900, 2025]
-    },
-    {
-        label: "Last Sale Year",
-        key: "last_sale_year",
-        type: "slider",
-        min: 1974,
-        max: 2025,
-        defaultValue: [1974, 2025]
-    }
-]
