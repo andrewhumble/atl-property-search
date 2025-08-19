@@ -1,6 +1,23 @@
 import { Slider } from "antd";
 import { useCallback } from "react";
 
+// Display text getter for slider filters
+export const getSliderDisplayText = (min: number, max: number, value: [number, number]): string => {
+  const [currentMin, currentMax] = value;
+  
+  // Check if values are at the extremes (default state)
+  if (currentMin === min && currentMax === max) {
+    return "Any";
+  }
+  
+  // Both values are set
+  if (currentMin !== min || currentMax !== max) {
+    return `${currentMin} - ${currentMax}`;
+  }
+  
+  return "Any";
+};
+
 export default function SliderFilter({ 
     name, 
     min, 

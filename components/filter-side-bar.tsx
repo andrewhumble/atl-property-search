@@ -9,7 +9,7 @@ import { Button } from "antd";
 interface FilterSideBarProps {
     onToggle: (isOpen: boolean) => void;
     filterValues: FilterValues;
-    onFilterChange: (filterKey: string, newValue: number | (number | null)[]) => void;
+    onFilterChange: (filterKey: string, newValue: FilterValue) => void;
     hasNonDefaultFilters: boolean;
     onClearFilters: () => void;
     onSearch: (filters: FilterValues) => void;
@@ -49,7 +49,7 @@ export default function FilterSideBar({
                             key={filter.key}
                             filter={filter}
                             value={filterValues[filter.key] as FilterValue}
-                            onChange={(newValue: number | (number | null)[]) => {
+                            onChange={(newValue: FilterValue) => {
                                 onFilterChange(filter.key, newValue);
                             }}
                         />

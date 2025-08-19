@@ -194,7 +194,7 @@ export default function GoogleMapView({ features, shouldAutoOpenPopup }: GoogleM
         markers: markers,
         algorithm: new SuperClusterAlgorithm({
           minPoints: 10,
-          radius: 150,
+          radius: 300,
           maxZoom: 20
         })
       });

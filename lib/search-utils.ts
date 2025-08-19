@@ -1,7 +1,7 @@
 import { FilterValues } from "@/types";
 
 
-export async function searchProperties(filters: FilterValues) {
+export async function searchProperties(filters: FilterValues, bounds?: { south: number, north: number, west: number, east: number }) {
     const queryParams = new URLSearchParams();
 
     // Add filter parameters to query string
@@ -17,6 +17,10 @@ export async function searchProperties(filters: FilterValues) {
             queryParams.append(key.toLowerCase(), value.toString());
         }
     });
+
+    if (bounds) {
+        queryParams.append('bounds', JSON.stringify(bounds));
+    }
 
     const response = await fetch(`/api/properties?${queryParams.toString()}`);
     const data = await response.json();

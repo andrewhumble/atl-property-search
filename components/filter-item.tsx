@@ -1,77 +1,9 @@
 import { Filter } from "@/types";
-import RangeFilter from "@/components/filter-types/range-filter";
-import MultiSelectFilter from "@/components/filter-types/multi-select-filter";
-import SliderFilter from "@/components/filter-types/slider-filter";
 import { useState, useEffect, useCallback } from "react";
 import { Dropdown, Button } from "antd";
 import { DownOutlined } from "@ant-design/icons";
 import { FilterValue } from "@/types";
-// Helper function to format appraised value
-const formatAppraisedValue = (value: number): string => {
-  const rounded = Math.round(value / 1000);
-  return rounded >= 1000 ? `${Math.round(rounded / 1000)}M` : `${rounded}k`;
-};
-
-// Helper function to get display text for range filters
-const getRangeDisplayText = (filter: Filter, value: (number | null)[]): string => {
-  const [min, max] = value;
-  
-  // Both values are null or undefined
-  if ((min === null || min === undefined) && (max === null || max === undefined)) {
-    return "Any";
-  }
-  
-  // Both values are set
-  if (min !== null && min !== undefined && max !== null && max !== undefined) {
-    const formatter = filter.key === 'total_appraised_value' ? formatAppraisedValue : (val: number) => val.toString();
-    return `${formatter(min)} - ${formatter(max)}`;
-  }
-  
-  // Only min is set
-  if (min !== null && min !== undefined) {
-    const formatter = filter.key === 'total_appraised_value' 
-      ? (val: number) => `${formatAppraisedValue(val)}+`
-      : (val: number) => `${val}+`;
-    return formatter(min);
-  }
-  
-  // Only max is set
-  if (max !== null && max !== undefined) {
-    const formatter = filter.key === 'total_appraised_value'
-      ? (val: number) => `${formatAppraisedValue(val)}-`
-      : (val: number) => `${val}-`;
-    return formatter(max);
-  }
-  
-  return "Any";
-};
-
-// Helper function to get display text for slider filters
-const getSliderDisplayText = (filter: Extract<Filter, { type: "slider" }>, value: [number, number]): string => {
-  const [min, max] = value;
-  
-  // Check if values are at the extremes (default state)
-  if (min === filter.min && max === filter.max) {
-    return "Any";
-  }
-  
-  // Both values are set
-  if (min !== filter.min || max !== filter.max) {
-    return `${min} - ${max}`;
-  }
-  
-  return "Any";
-};
-
-// Helper function to get display text for selection filters
-const getSelectionDisplayText = (filter: Extract<Filter, { type: "selection" }>, value: number): string => {
-  if (value === undefined) {
-    return "Any";
-  }
-  
-  const option = filter.options.find(opt => opt.value === value);
-  return option ? option.label : "Any";
-};
+import { loadFilterComponents, getFilterComponent } from "@/lib/filter-registry";
 
 export default function FilterItem({
     filter,
@@ -85,18 +17,17 @@ export default function FilterItem({
     const [isOpen, setIsOpen] = useState(false);
     const [displayText, setDisplayText] = useState("Any");
 
+    // Load filter components on mount
+    useEffect(() => {
+        loadFilterComponents();
+    }, []);
+
     // Update display text when filter values change
     useEffect(() => {
         const updateDisplayText = () => {
-            if (filter.type === "range") {
-                const rangeValue = value as (number | null)[];
-                setDisplayText(getRangeDisplayText(filter, rangeValue));
-            } else if (filter.type === "slider") {
-                const sliderValue = value as [number, number];
-                setDisplayText(getSliderDisplayText(filter, sliderValue));
-            } else if (filter.type === "selection") {
-                const selectionValue = value as number;
-                setDisplayText(getSelectionDisplayText(filter, selectionValue));
+            const factory = getFilterComponent(filter.type);
+            if (factory) {
+                setDisplayText(factory.getDisplayText(filter, value));
             }
         };
 
@@ -106,76 +37,34 @@ export default function FilterItem({
         return () => clearInterval(interval);
     }, [value, filter]);
 
-    const handleSelectionChange = useCallback((newValue: number) => {
+    const handleChange = useCallback((newValue: FilterValue) => {
         onChange?.(newValue);
     }, [onChange]);
 
-    const handleMinChange = useCallback((newValue: number | null) => {
-        if (newValue === null) {
-            return;
+    const renderFilterComponent = () => {
+        const factory = getFilterComponent(filter.type);
+        if (!factory) {
+            console.warn(`No filter component registered for type: ${filter.type}`);
+            return null;
         }
-        const values = value as (number | null)[];
-        const updatedValues: (number | null)[] = [newValue, values[1]];
-        onChange?.(updatedValues);
-    }, [value, onChange]);
 
-    const handleMaxChange = useCallback((newValue: number | null) => {
-        if (newValue === null) {
-            return;
-        }
-        const values = value as (number | null)[];
-        const updatedValues: (number | null)[] = [values[0], newValue];
-        onChange?.(updatedValues);
-    }, [value, onChange]);
+        const FilterComponent = factory.component;
+        const props = factory.getProps(filter, value, handleChange);
+        
+        return <FilterComponent {...props} />;
+    };
 
-    const handleSliderChange = useCallback((newValue: [number, number]) => {
-        onChange?.(newValue);
-    }, [onChange]);
+    const isDefault = (filter: Filter, value: FilterValue) => {
+        const factory = getFilterComponent(filter.type);
+        return factory ? factory.isDefault(filter, value) : false;
+    };
 
     const dropdownContent = (
         <div className="bg-white p-4 rounded-lg shadow-lg min-w-64">
             <div className="text-sm font-medium text-gray-900 mb-3">{filter.label}</div>
-            {filter.type === "range" && (
-                <RangeFilter
-                    name={filter.label}
-                    min={filter.min}
-                    max={filter.max}
-                    value={value as (number | null)[]}
-                    onMinChange={handleMinChange}
-                    onMaxChange={handleMaxChange}
-                />
-            )}
-            {filter.type === "slider" && (
-                <SliderFilter
-                    name={filter.label}
-                    min={filter.min}
-                    max={filter.max}
-                    value={value as [number, number]}
-                    onChange={handleSliderChange}
-                />
-            )}
-            {filter.type === "selection" && (
-                <MultiSelectFilter
-                    options={filter.options}
-                    value={value as number}
-                    onChange={handleSelectionChange}
-                />
-            )}
+            {renderFilterComponent()}
         </div>
     );
-
-    const isDefault = (filter: Filter, value: FilterValue) => {
-        if (filter.type === "range") {
-            const values = value as (number | null)[];
-            return values.every((val, index) => val === filter.defaultValue[index]);
-        } else if (filter.type === "slider") {
-            const values = value as [number, number];
-            return values[0] === filter.defaultValue[0] && values[1] === filter.defaultValue[1];
-        } else if (filter.type === "selection") {
-            return value === filter.defaultValue;
-        }
-        return false;
-    }
 
     return (
         <div className="flex flex-col">

@@ -3,12 +3,13 @@
 import { useCallback, useEffect, useState } from "react";
 import "leaflet/dist/leaflet.css";
 import MapContainer from "@/components/map-container";
-import { FilterValues, PropertyFeature } from "@/types";
+import { FilterValues, FilterValue, PropertyFeature } from "@/types";
 import Navbar from "@/components/navbar";
 import { searchProperties } from "@/lib/search-utils";
 import FilterSideBar from "@/components/filter-side-bar";
 import { AnimatePresence, motion } from "framer-motion";
 import { filters } from "@/lib/constants";
+import { getFilterComponent } from "@/lib/filter-registry";
 
 export default function Home() {
   const [initialFeatures, setInitialFeatures] = useState<PropertyFeature[]>([]);
@@ -18,15 +19,7 @@ export default function Home() {
   // Initialize filter values to their default values
   const [filterValues, setFilterValues] = useState<FilterValues>(
     filters.reduce((acc, filter) => {
-      if (filter.type === "range") {
-        const defaultValue = filter.defaultValue as [number | null, number | null];
-        acc[filter.key] = [defaultValue[0] ?? null, defaultValue[1] ?? null];
-      } else if (filter.type === "slider") {
-        const defaultValue = filter.defaultValue as [number, number];
-        acc[filter.key] = defaultValue;
-      } else {
-        acc[filter.key] = filter.defaultValue as number;
-      }
+      acc[filter.key] = filter.defaultValue;
       return acc;
     }, {} as FilterValues)
   );
@@ -39,24 +32,26 @@ export default function Home() {
     setLoading(false);
   }, []);
 
-  const handleFilterChange = useCallback((filterKey: string, newValue: number | (number | null)[]) => {
+  const handleFilterChange = useCallback((filterKey: string, newValue: FilterValue) => {
     setFilterValues(prev => ({ ...prev, [filterKey]: newValue }));
-    setHasNonDefaultFilters(true);
   }, []);
 
-  const clearAllFilters = useCallback(() => {
-    filters.forEach(filter => {
-      if (filter.type === "range") {
-        const defaultValues = filter.defaultValue as [number | null, number | null];
-        setFilterValues(prev => ({ ...prev, [filter.key]: defaultValues }));
-      } else if (filter.type === "slider") {
-        const defaultValues = filter.defaultValue as [number, number];
-        setFilterValues(prev => ({ ...prev, [filter.key]: defaultValues }));
-      } else if (filter.type === "selection") {
-        setFilterValues(prev => ({ ...prev, [filter.key]: filter.defaultValue }));
-      }
+  // Update hasNonDefaultFilters whenever filterValues change
+  useEffect(() => {
+    const hasNonDefault = filters.some(filter => {
+      const value = filterValues[filter.key];
+      const factory = getFilterComponent(filter.type);
+      return factory && !factory.isDefault(filter, value as any);
     });
-    setHasNonDefaultFilters(false);
+    setHasNonDefaultFilters(hasNonDefault);
+  }, [filterValues]);
+
+  const clearAllFilters = useCallback(() => {
+    const clearedValues = filters.reduce((acc, filter) => {
+      acc[filter.key] = filter.defaultValue;
+      return acc;
+    }, {} as FilterValues);
+    setFilterValues(clearedValues);
   }, []);
 
   return (

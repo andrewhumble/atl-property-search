@@ -7,12 +7,13 @@ import { FilterValues, FilterValue } from "@/types";
 import { SlidersHorizontalIcon } from "lucide-react";
 import TargetSearch from "@/components/target-search";
 import { Loader2, ChevronDown } from "lucide-react";
+import { getFilterComponent } from "@/lib/filter-registry";
 
 interface FilterBarProps {
   onSearch: (filters: FilterValues) => void;
   onToggle: () => void;
   filterValues: FilterValues;
-  onFilterChange: (filterKey: string, newValue: number | (number | null)[]) => void;
+  onFilterChange: (filterKey: string, newValue: FilterValue) => void;
   hasNonDefaultFilters: boolean;
   onClearFilters: () => void;
   isLoading: boolean;
@@ -39,25 +40,11 @@ export default function FilterBar({
 
       // Only include filters that have actual values (not undefined)
       if (value !== undefined) {
-        if (Array.isArray(value)) {
-          if (filter.type === "range") {
-            // For range filters, check if at least one value is set
-            const [min, max] = value as (number | null)[];
-            if (min !== null || max !== null) {
-              searchFilters[filter.key] = value;
-            }
-          } else if (filter.type === "slider") {
-            // For slider filters, check if values are not at extremes
-            const [min, max] = value as [number, number];
-            if (min !== filter.min || max !== filter.max) {
-              searchFilters[filter.key] = value;
-            }
-          }
-        } else {
-          // For selection filters, only include if value is defined and not 0 (default)
-          if (value !== 0) {
-            searchFilters[filter.key] = value;
-          }
+        const factory = getFilterComponent(filter.type);
+        
+        // Use the filter registry's isDefault function to determine if this filter should be included
+        if (factory && !factory.isDefault(filter, value as FilterValue)) {
+          searchFilters[filter.key] = value;
         }
       }
     });
@@ -120,7 +107,7 @@ export default function FilterBar({
                 <FilterItem
                   filter={filter}
                   value={filterValues[filter.key] as FilterValue}
-                  onChange={(newValue: number | (number | null)[]) => {
+                  onChange={(newValue: FilterValue) => {
                     onFilterChange(filter.key, newValue);
                   }}
                 />

@@ -56,10 +56,17 @@ export type Filter =
     min: number;
     max: number;
     defaultValue: [number, number];
+  }
+  | {
+    label: string;
+    key: string;
+    type: "checkbox";
+    options: { label: string; value: string }[];
+    defaultValue: string[];
   };
 
 export interface FilterValues {
-  [key: string]: (number | null)[] | number | string;
+  [key: string]: (number | null)[] | number | string | string[];
 }
 
-export type FilterValue = number | (number | null)[] | [number, number];
+export type FilterValue = number | (number | null)[] | [number, number] | string[];

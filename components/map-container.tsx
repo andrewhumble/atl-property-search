@@ -1,5 +1,5 @@
 import FilterBar from "@/components/filter-bar"
-import { FilterValues, PropertyFeature } from "@/types"
+import { FilterValues, FilterValue, PropertyFeature } from "@/types"
 import React, { useState, useCallback, useEffect, useMemo } from "react"
 import dynamic from 'next/dynamic';
 import { searchProperties } from "@/lib/search-utils";
@@ -13,10 +13,10 @@ interface MapContainerProps {
     initialFeatures: PropertyFeature[];
     onToggle: () => void;
     filterValues: FilterValues;
-    onFilterChange: (filterKey: string, newValue: number | (number | null)[]) => void;
+    onFilterChange: (filterKey: string, newValue: FilterValue) => void;
     hasNonDefaultFilters: boolean;
     onClearFilters: () => void;
-    onSearch: (filters: FilterValues) => Promise<void>;
+    onSearch: (filters: FilterValues) => void;
 }
 
 export default function MapContainer({

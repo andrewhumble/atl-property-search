@@ -3,6 +3,7 @@ import { getQpublicUrl, getGisUrl } from '@/lib/utils';
 import { NextResponse } from 'next/server';
 import { createClient } from '@libsql/client';
 import { filters } from '@/lib/constants';
+import Database from 'better-sqlite3';
 
 const client = createClient({
     url: process.env.TURSO_DATABASE_URL,
@@ -17,6 +18,16 @@ const cache = new LRUCache({
 function buildQuery(params) {
     const conditions = ['address IS NOT NULL'];
     const values = {};
+
+    // Add viewport bounds if provided
+    if (params.bounds) {
+        const bounds = JSON.parse(params.bounds);
+        conditions.push(`lat >= @south AND lat <= @north AND lon >= @west AND lon <= @east`);
+        values.south = bounds.south;
+        values.north = bounds.north;
+        values.west = bounds.west;
+        values.east = bounds.east;
+    }
 
     if (params.target) {
         const owner_words = params.target.split(' ').filter(word => word.length > 0);
@@ -73,8 +84,6 @@ function buildQuery(params) {
         if (limit > 0 && limit <= 100) { // Sanity check: max 100 results
             sql += ` LIMIT ${limit}`;
         }
-    } else {
-        sql += ` LIMIT 5000`;
     }
 
     return { sql, values };
@@ -89,8 +98,15 @@ export async function GET(request) {
 
     if (!rows) {
         const { sql, values } = buildQuery(params);
-        const result = await client.execute(sql, values);
-        rows = result.rows;
+        // if local, query db/properties.db using better-sqlite3
+        if (process.env.NODE_ENV === 'development') {
+            const db = Database('/Users/andrewhumble/projects/atl-property-map2/atl-property-search/db/properties.db');
+            const result = db.prepare(sql).all(values);
+            rows = result;
+        } else {
+            const result = await client.execute(sql, values);
+            rows = result.rows;
+        }
         cache.set(cacheKey, rows);
     }
 
