@@ -13,8 +13,8 @@ export async function searchProperties(filters: FilterValues, bounds?: { south: 
             if (value[1] !== undefined && value[1] !== null) {
                 queryParams.append(`${key.toLowerCase()}_max`, value[1].toString());
             }
-        } else {
-            queryParams.append(key.toLowerCase(), value.toString());
+        } else if (value !== undefined && value !== null) {
+            queryParams.append(key.toLowerCase(), String(value));
         }
     });
 
