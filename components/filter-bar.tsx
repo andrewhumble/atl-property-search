@@ -15,6 +15,7 @@ interface FilterBarProps {
   filterValues: FilterValues;
   onFilterChange: (filterKey: string, newValue: FilterValue) => void;
   hasNonDefaultFilters: boolean;
+  hasMoreFilters: boolean;
   onClearFilters: () => void;
   isLoading: boolean;
 }
@@ -25,6 +26,7 @@ export default function FilterBar({
   filterValues,
   onFilterChange,
   hasNonDefaultFilters,
+  hasMoreFilters,
   onClearFilters,
   isLoading
 }: FilterBarProps) {
@@ -73,8 +75,8 @@ export default function FilterBar({
           ))}
         </div>
         <Button
-          color="default"
           variant="filled"
+          color={`${hasMoreFilters ? "default" : "primary"}`}
           className="flex items-center justify-center w-36"
           onClick={openSideBar}
         >

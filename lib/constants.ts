@@ -44,7 +44,7 @@ export const filters: Filter[] = [
         label: "Square Feet",
         key: "sqft",
         type: "range",
-        min: 0,
+        min: 500,
         max: 10000,
         defaultValue: [null, null],
         units: "sqft"
@@ -53,7 +53,7 @@ export const filters: Filter[] = [
         label: "Acreage",
         key: "acres",
         type: "range",
-        min: 0,
+        min: 0.01,
         max: 10,
         defaultValue: [null, null],
         units: "acres"

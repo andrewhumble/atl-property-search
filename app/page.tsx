@@ -16,6 +16,8 @@ export default function Home() {
   const [initialFeatures, setInitialFeatures] = useState<PropertyFeature[]>([]);
   const [loading, setLoading] = useState(true);
   const [isSideBarOpen, setIsSideBarOpen] = useState(false);
+  const [hasNonDefaultFilters, setHasNonDefaultFilters] = useState(false);
+  const [hasMoreFilters, setHasMoreFilters] = useState(false);
   
   // Initialize filter values from session storage or defaults
   const [filterValues, setFilterValues] = useState<FilterValues>(() => {
@@ -32,8 +34,6 @@ export default function Home() {
     }, {} as FilterValues);
   });
   
-  const [hasNonDefaultFilters, setHasNonDefaultFilters] = useState(false);
-
   // Save filter values to session storage whenever they change
   useEffect(() => {
     saveFilterValues(filterValues);
@@ -58,6 +58,13 @@ export default function Home() {
       return factory && !factory.isDefault(filter, value as any);
     });
     setHasNonDefaultFilters(hasNonDefault);
+
+    const hasNonDefaultMore = filters.slice(4).some(filter => {
+      const value = filterValues[filter.key];
+      const factory = getFilterComponent(filter.type);
+      return factory && !factory.isDefault(filter, value as any);
+    });
+    setHasMoreFilters(hasNonDefaultMore);
   }, [filterValues]);
 
   const clearAllFilters = useCallback(() => {
@@ -102,6 +109,7 @@ export default function Home() {
           filterValues={filterValues}
           onFilterChange={handleFilterChange}
           hasNonDefaultFilters={hasNonDefaultFilters}
+          hasMoreFilters={hasMoreFilters}
           onClearFilters={clearAllFilters}
           onSearch={handleSearch}
         />

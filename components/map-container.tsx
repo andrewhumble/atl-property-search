@@ -15,6 +15,7 @@ interface MapContainerProps {
     filterValues: FilterValues;
     onFilterChange: (filterKey: string, newValue: FilterValue) => void;
     hasNonDefaultFilters: boolean;
+    hasMoreFilters: boolean;
     onClearFilters: () => void;
     onSearch: (filters: FilterValues) => void;
 }
@@ -25,6 +26,7 @@ export default function MapContainer({
     filterValues,
     onFilterChange,
     hasNonDefaultFilters,
+    hasMoreFilters,
     onClearFilters,
     onSearch
 }: MapContainerProps) {
@@ -68,10 +70,11 @@ export default function MapContainer({
             filterValues={filterValues}
             onFilterChange={onFilterChange}
             hasNonDefaultFilters={hasNonDefaultFilters}
+            hasMoreFilters={hasMoreFilters}
             onClearFilters={onClearFilters}
             isLoading={loading}
         />
-    ), [handleSearch, onToggle, filterValues, onFilterChange, hasNonDefaultFilters, onClearFilters, loading]);
+    ), [handleSearch, onToggle, filterValues, onFilterChange, hasNonDefaultFilters, hasMoreFilters, onClearFilters, loading]);
 
     return (
         <div className="flex flex-col w-full">
