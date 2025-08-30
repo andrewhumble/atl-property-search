@@ -4,14 +4,13 @@ import { Button } from "antd";
 import { CloseOutlined } from "@ant-design/icons";
 import { filters } from "@/lib/constants";
 import { FilterValues, FilterValue } from "@/types";
-import { SlidersHorizontalIcon } from "lucide-react";
 import TargetSearch from "@/components/target-search";
 import { Loader2 } from "lucide-react";
 import { getFilterComponent } from "@/lib/filter-registry";
+import MoreFiltersButton from "@/components/more-filters-button";
 
 interface FilterBarProps {
   onSearch: (filters: FilterValues) => void;
-  onToggle: () => void;
   filterValues: FilterValues;
   onFilterChange: (filterKey: string, newValue: FilterValue) => void;
   hasNonDefaultFilters: boolean;
@@ -22,7 +21,6 @@ interface FilterBarProps {
 
 export default function FilterBar({
   onSearch,
-  onToggle,
   filterValues,
   onFilterChange,
   hasNonDefaultFilters,
@@ -50,10 +48,6 @@ export default function FilterBar({
     onSearch(searchFilters);
   }, [filterValues, onSearch]);
 
-  const openSideBar = useCallback(() => {
-    onToggle();
-  }, [onToggle]);
-
   return (
     <div className="w-full bg-primary rounded-2xl px-4 flex flex-col md:flex-row gap-2 z-10 justify-between">
       {/* Filters and buttons that can wrap together */}
@@ -74,15 +68,7 @@ export default function FilterBar({
             </div>
           ))}
         </div>
-        <Button
-          variant="filled"
-          color={`${hasMoreFilters ? "default" : "primary"}`}
-          className="flex items-center justify-center w-36"
-          onClick={openSideBar}
-        >
-          <SlidersHorizontalIcon size={16} />
-          More Filters
-        </Button>
+        <MoreFiltersButton filterValues={filterValues} onFilterChange={onFilterChange} />
       </div>
       {/* Action buttons */}
       <div className="flex gap-2 items-end flex-shrink-0">

@@ -7,6 +7,7 @@ import { createPopupContent } from '@/lib/map-utils';
 interface GoogleMapViewProps {
   features: PropertyFeature[];
   shouldAutoOpenPopup: boolean;
+  isDataLoading?: boolean;
 }
 
 const GEORGIA_BOUNDS = {
@@ -16,7 +17,7 @@ const GEORGIA_BOUNDS = {
   east: -82.500,
 };
 
-export default function GoogleMapView({ features, shouldAutoOpenPopup }: GoogleMapViewProps) {
+export default function GoogleMapView({ features, shouldAutoOpenPopup, isDataLoading }: GoogleMapViewProps) {
   const mapRef = useRef<HTMLDivElement>(null);
   const mapInstanceRef = useRef<google.maps.Map | null>(null);
   const markersRef = useRef<google.maps.Marker[]>([]);
@@ -262,12 +263,19 @@ export default function GoogleMapView({ features, shouldAutoOpenPopup }: GoogleM
   }
 
   return (
-    <div className="w-full h-full z-0">
+    <div className="w-full h-full z-0 relative">
       <div 
         ref={mapRef} 
         className="w-full h-full"
         style={{ minHeight: '400px' }}
       />
+      {isDataLoading && (
+        <div className="absolute inset-0 bg-white/50 flex items-center justify-center pointer-events-none">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-2"></div>
+          </div>
+        </div>
+      )}
     </div>
   );
 } 

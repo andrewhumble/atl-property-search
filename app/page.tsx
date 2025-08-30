@@ -14,8 +14,7 @@ import { loadFilterValues, saveFilterValues, clearFilterValues } from "@/lib/ses
 
 export default function Home() {
   const [initialFeatures, setInitialFeatures] = useState<PropertyFeature[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [isSideBarOpen, setIsSideBarOpen] = useState(false);
+  const [loading, setLoading] = useState(false);
   const [hasNonDefaultFilters, setHasNonDefaultFilters] = useState(false);
   const [hasMoreFilters, setHasMoreFilters] = useState(false);
   
@@ -44,6 +43,17 @@ export default function Home() {
     const features = await searchProperties(filters);
     setInitialFeatures(features);
     setLoading(false);
+  }, []);
+
+  const handleShowSaved = useCallback(async () => {
+    setLoading(true);
+    try {
+      const res = await fetch('/api/saved/properties');
+      const data = await res.json();
+      setInitialFeatures(data.features || []);
+    } finally {
+      setLoading(false);
+    }
   }, []);
 
   const handleFilterChange = useCallback((filterKey: string, newValue: FilterValue) => {
@@ -78,40 +88,18 @@ export default function Home() {
   }, []);
 
   return (
-    <div className={`flex flex-col flex-1 h-full w-full ${isSideBarOpen ? 'bg-dimmed' : ''}`}>
-      <AnimatePresence>
-        {isSideBarOpen && (
-          <>
-            {/* Backdrop overlay */}
-            <motion.div
-              className="fixed inset-0 bg-black/50 z-40"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 0.5 }}
-              exit={{ opacity: 0 }}
-              onClick={() => setIsSideBarOpen(false)}
-            />
-            <FilterSideBar 
-              onToggle={setIsSideBarOpen} 
-              filterValues={filterValues}
-              onFilterChange={handleFilterChange}
-              hasNonDefaultFilters={hasNonDefaultFilters}
-              onClearFilters={clearAllFilters}
-              onSearch={handleSearch}
-            />
-          </>
-        )}
-      </AnimatePresence>
-      <Navbar onSearch={handleSearch} />
+    <div className="flex flex-col flex-1 h-full w-full">
+      <Navbar onSearch={handleSearch} onSavedClick={handleShowSaved} />
       <div className="flex flex-1">
         <MapContainer 
           initialFeatures={initialFeatures} 
-          onToggle={() => setIsSideBarOpen(!isSideBarOpen)}
           filterValues={filterValues}
           onFilterChange={handleFilterChange}
           hasNonDefaultFilters={hasNonDefaultFilters}
           hasMoreFilters={hasMoreFilters}
           onClearFilters={clearAllFilters}
           onSearch={handleSearch}
+          externalLoading={loading}
         />
       </div>
     </div>

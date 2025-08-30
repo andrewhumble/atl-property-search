@@ -11,28 +11,29 @@ const MapView = dynamic(() => import('./google-map-view'), {
 
 interface MapContainerProps {
     initialFeatures: PropertyFeature[];
-    onToggle: () => void;
     filterValues: FilterValues;
     onFilterChange: (filterKey: string, newValue: FilterValue) => void;
     hasNonDefaultFilters: boolean;
     hasMoreFilters: boolean;
     onClearFilters: () => void;
     onSearch: (filters: FilterValues) => void;
+    externalLoading?: boolean;
 }
 
 export default function MapContainer({
     initialFeatures,
-    onToggle,
     filterValues,
     onFilterChange,
     hasNonDefaultFilters,
     hasMoreFilters,
     onClearFilters,
-    onSearch
+    onSearch,
+    externalLoading
 }: MapContainerProps) {
     const [features, setFeatures] = useState<PropertyFeature[]>(initialFeatures);
     const [loading, setLoading] = useState(false);
     const [shouldAutoOpenPopup, setShouldAutoOpenPopup] = useState(false);
+    const combinedLoading = loading || !!externalLoading;
 
     useEffect(() => {
         setFeatures(initialFeatures);
@@ -59,22 +60,21 @@ export default function MapContainer({
 
     // Memoize the MapView component to prevent unnecessary re-renders
     const memoizedMapView = useMemo(() => (
-        <MapView features={features} shouldAutoOpenPopup={shouldAutoOpenPopup} />
-    ), [features, shouldAutoOpenPopup]);
+        <MapView features={features} shouldAutoOpenPopup={shouldAutoOpenPopup} isDataLoading={combinedLoading} />
+    ), [features, shouldAutoOpenPopup, combinedLoading]);
 
     // Memoize the FilterBar component to prevent unnecessary re-renders
     const memoizedFilterBar = useMemo(() => (
         <FilterBar
             onSearch={handleSearch}
-            onToggle={onToggle}
             filterValues={filterValues}
             onFilterChange={onFilterChange}
             hasNonDefaultFilters={hasNonDefaultFilters}
             hasMoreFilters={hasMoreFilters}
             onClearFilters={onClearFilters}
-            isLoading={loading}
+            isLoading={combinedLoading}
         />
-    ), [handleSearch, onToggle, filterValues, onFilterChange, hasNonDefaultFilters, hasMoreFilters, onClearFilters, loading]);
+    ), [handleSearch, filterValues, onFilterChange, hasNonDefaultFilters, hasMoreFilters, onClearFilters, combinedLoading]);
 
     return (
         <div className="flex flex-col w-full">

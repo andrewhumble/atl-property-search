@@ -8,11 +8,13 @@ import { loadFilterComponents, getFilterComponent } from "@/lib/filter-registry"
 export default function FilterItem({
     filter,
     value,
-    onChange
+    onChange,
+    btnVariant = "outlined"
 }: {
     filter: Filter,
     value: FilterValue,
-    onChange?: (newValue: FilterValue) => void
+    onChange?: (newValue: FilterValue) => void,
+    btnVariant?: "outlined" | "text"
 }) {
     const [isOpen, setIsOpen] = useState(false);
     const [displayText, setDisplayText] = useState("Any");
@@ -81,7 +83,7 @@ export default function FilterItem({
             >
                 <Button
                     className="flex items-center justify-between w-full text-gray-700 rounded-lg"
-                    variant="outlined"
+                    variant={`${isDefault(filter, value) ? btnVariant : "solid"}`}
                     color={`${isDefault(filter, value) ? "default" : "primary"}`}
                 >
                     <span className="flex-1 text-left text-md">{displayText}</span>

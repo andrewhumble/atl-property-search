@@ -5,7 +5,7 @@ import { useState } from 'react';
 import AboutModal from './about-modal';
 import { FilterValues } from '@/types';
 
-export default function Navbar({ onSearch }: { onSearch: (filters: FilterValues) => void }) {
+export default function Navbar({ onSearch, onSavedClick }: { onSearch: (filters: FilterValues) => void, onSavedClick: () => void }) {
   const [isAboutModalOpen, setIsAboutModalOpen] = useState(false);
 
   const handleAboutClick = () => {
@@ -27,7 +27,7 @@ export default function Navbar({ onSearch }: { onSearch: (filters: FilterValues)
           <Button type="default" onClick={handleAboutClick}>
             About
           </Button>
-          <Button type="default" icon={<BookOutlined />}>
+          <Button type="default" icon={<BookOutlined />} onClick={onSavedClick}>
             Saved
           </Button>
         </div>
