@@ -41,6 +41,7 @@ export type Filter =
     min: number;
     max: number;
     defaultValue: [number | null, number | null];
+    units?: string;
   }
   | {
     label: string;
@@ -48,6 +49,7 @@ export type Filter =
     type: "selection";
     options: { label: string; value: number }[];
     defaultValue: number;
+    units?: string;
   }
   | {
     label: string;
@@ -56,17 +58,18 @@ export type Filter =
     min: number;
     max: number;
     defaultValue: [number, number];
+    units?: string;
   }
   | {
     label: string;
     key: string;
     type: "checkbox";
     options: { label: string; value: string }[];
-    defaultValue: string[];
+    defaultValue: boolean | undefined;
   };
 
 export interface FilterValues {
-  [key: string]: (number | null)[] | number | string | string[];
+  [key: string]: (number | null)[] | number | string | string[] | boolean | undefined;
 }
 
-export type FilterValue = number | (number | null)[] | [number, number] | string[];
+export type FilterValue = number | (number | null)[] | [number, number] | string[] | boolean;

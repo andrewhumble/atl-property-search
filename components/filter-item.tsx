@@ -27,7 +27,12 @@ export default function FilterItem({
         const updateDisplayText = () => {
             const factory = getFilterComponent(filter.type);
             if (factory) {
-                setDisplayText(factory.getDisplayText(filter, value));
+                // Check if the filter is in its default state
+                if (factory.isDefault(filter, value)) {
+                    setDisplayText(filter.label);
+                } else {
+                    setDisplayText(factory.getDisplayText(filter, value));
+                }
             }
         };
 
@@ -50,7 +55,7 @@ export default function FilterItem({
 
         const FilterComponent = factory.component;
         const props = factory.getProps(filter, value, handleChange);
-        
+
         return <FilterComponent {...props} />;
     };
 
@@ -60,17 +65,13 @@ export default function FilterItem({
     };
 
     const dropdownContent = (
-        <div className="bg-white p-4 rounded-lg shadow-lg min-w-64">
-            <div className="text-sm font-medium text-gray-900 mb-3">{filter.label}</div>
+        <div className="bg-white p-4 border border-gray-200 rounded-lg shadow-lg">
             {renderFilterComponent()}
         </div>
     );
 
     return (
         <div className="flex flex-col">
-            <span className="text-sm mb-1">
-                {filter.label}
-            </span>
             <Dropdown
                 overlay={dropdownContent}
                 trigger={['click']}
@@ -78,17 +79,14 @@ export default function FilterItem({
                 onOpenChange={setIsOpen}
                 placement="bottomLeft"
             >
-                <div className="border-b-1 border-gray-300">
-                    <Button
-                        className="flex items-center justify-between w-full text-gray-700 hover:text-gray-800 rounded-none"
-                        variant={`${isDefault(filter, value) ? "text" : "filled"}`}
-                        color={`${isDefault(filter, value) ? "default" : "primary"}`}
-                        style={{ borderRadius: "0" }}
-                    >
-                        <span className="flex-1 text-left text-md">{displayText}</span>
-                        <DownOutlined className="ml-auto" />
-                    </Button>
-                </div>
+                <Button
+                    className="flex items-center justify-between w-full text-gray-700 rounded-lg"
+                    variant="outlined"
+                    color={`${isDefault(filter, value) ? "default" : "primary"}`}
+                >
+                    <span className="flex-1 text-left text-md">{displayText}</span>
+                    <DownOutlined className="ml-auto" />
+                </Button>
             </Dropdown>
         </div>
     );

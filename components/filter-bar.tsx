@@ -1,4 +1,4 @@
-import React, { useCallback, useState, useEffect, useRef } from "react";
+import React, { useCallback } from "react";
 import FilterItem from "@/components/filter-item";
 import { Button } from "antd";
 import { CloseOutlined } from "@ant-design/icons";
@@ -6,7 +6,7 @@ import { filters } from "@/lib/constants";
 import { FilterValues, FilterValue } from "@/types";
 import { SlidersHorizontalIcon } from "lucide-react";
 import TargetSearch from "@/components/target-search";
-import { Loader2, ChevronDown } from "lucide-react";
+import { Loader2 } from "lucide-react";
 import { getFilterComponent } from "@/lib/filter-registry";
 
 interface FilterBarProps {
@@ -28,9 +28,6 @@ export default function FilterBar({
   onClearFilters,
   isLoading
 }: FilterBarProps) {
-  const [showDownArrow, setShowDownArrow] = useState(false);
-  const scrollContainerRef = useRef<HTMLDivElement>(null);
-
   const handleSearch = useCallback(() => {
     const searchFilters: FilterValues = {};
 
@@ -41,7 +38,7 @@ export default function FilterBar({
       // Only include filters that have actual values (not undefined)
       if (value !== undefined) {
         const factory = getFilterComponent(filter.type);
-        
+
         // Use the filter registry's isDefault function to determine if this filter should be included
         if (factory && !factory.isDefault(filter, value as FilterValue)) {
           searchFilters[filter.key] = value;
@@ -55,77 +52,38 @@ export default function FilterBar({
     onToggle();
   }, [onToggle]);
 
-  // Check scroll position and show/hide arrow
-  useEffect(() => {
-    const handleScroll = () => {
-      if (scrollContainerRef.current) {
-        const { scrollTop, scrollHeight, clientHeight } = scrollContainerRef.current;
-        const isAtBottom = scrollTop + clientHeight >= scrollHeight - 10; // 10px tolerance
-        setShowDownArrow(!isAtBottom && scrollHeight > clientHeight);
-      }
-    };
-
-    const container = scrollContainerRef.current;
-    if (container) {
-      container.addEventListener('scroll', handleScroll);
-      // Check initial state
-      handleScroll();
-    }
-
-    return () => {
-      if (container) {
-        container.removeEventListener('scroll', handleScroll);
-      }
-    };
-  }, [filterValues]); // Re-check when filters change
-
-  const scrollToBottom = () => {
-    if (scrollContainerRef.current) {
-      scrollContainerRef.current.scrollTo({
-        top: scrollContainerRef.current.scrollHeight,
-        behavior: 'smooth'
-      });
-    }
-  };
-
   return (
-    <div className="w-full bg-primary rounded-2xl flex flex-col gap-3 md:pr-4 z-10 h-full">
-      {/* Search at top */}
-      <TargetSearch onSearch={onSearch} />
-
-      <div className="border-t border-gray-200 my-2 hidden md:block" />
-
-      {/* Filters expand + scroll */}
-      <div className="hidden md:flex flex-col 3 flex-grow relative">
-        <div 
-          ref={scrollContainerRef}
-          className="flex flex-col gap-3 overflow-y-auto max-h-[calc(100vh-10rem)]"
-        >
-          <div className="flex flex-col gap-3">
-            {filters.map((filter) => (
-              <div className="w-full" key={filter.key}>
-                <FilterItem
-                  filter={filter}
-                  value={filterValues[filter.key] as FilterValue}
-                  onChange={(newValue: FilterValue) => {
-                    onFilterChange(filter.key, newValue);
-                  }}
-                />
-              </div>
-            ))}
-          </div>
+    <div className="w-full bg-primary rounded-2xl px-4 flex flex-col md:flex-row gap-2 z-10 justify-between">
+      {/* Filters and buttons that can wrap together */}
+      <div className="flex flex-wrap gap-2 items-end">
+        {/* Search at top */}
+        <TargetSearch onSearch={onSearch} />
+        {/* Filters section */}
+        <div className="flex gap-2 flex-wrap">
+          {filters.slice(0, 4).map((filter) => (
+            <div key={filter.key}>
+              <FilterItem
+                filter={filter}
+                value={filterValues[filter.key] as FilterValue}
+                onChange={(newValue: FilterValue) => {
+                  onFilterChange(filter.key, newValue);
+                }}
+              />
+            </div>
+          ))}
         </div>
-        
-        {/* Floating down arrow */}
-        {/* {showDownArrow && (
-          <div className="absolute bottom-1 left-1/2 transform -translate-x-1/2 bg-gray-200 opacity-40 bg-gradient-to-b from-white to-gray-300 rounded-full p-2 shadow-lg border border-gray-200 cursor-pointer" onClick={scrollToBottom}>
-            <ChevronDown className="w-4 h-4 text-gray-600" onClick={scrollToBottom} />
-          </div>
-        )} */}
+        <Button
+          color="default"
+          variant="filled"
+          className="flex items-center justify-center w-36"
+          onClick={openSideBar}
+        >
+          <SlidersHorizontalIcon size={16} />
+          More Filters
+        </Button>
       </div>
-
-      {/* Sticky action buttons at bottom */}
-      <div className="hidden md:flex gap-3 mt-auto">
+      {/* Action buttons */}
+      <div className="flex gap-2 items-end flex-shrink-0">
         <Button
           className="w-full"
           variant="outlined"
@@ -144,19 +102,6 @@ export default function FilterBar({
           disabled={isLoading}
         >
           {isLoading ? <Loader2 className="animate-spin" size={16} /> : "Apply"}
-        </Button>
-      </div>
-
-      {/* Mobile filter bar */}
-      <div className="flex md:hidden mb-4">
-        <Button
-          color="primary"
-          variant="filled"
-          className="flex items-center justify-center w-full"
-          onClick={openSideBar}
-        >
-          <SlidersHorizontalIcon size={16} />
-          Filters
         </Button>
       </div>
     </div>

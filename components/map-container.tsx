@@ -74,18 +74,10 @@ export default function MapContainer({
     ), [handleSearch, onToggle, filterValues, onFilterChange, hasNonDefaultFilters, onClearFilters, loading]);
 
     return (
-        <div className="flex md:flex-row flex-col w-full">
-            {/* Sidebar for sm and larger screens */}
-            <div className="hidden md:flex md:flex-col md:w-80 lg:w-96 bg-white">
+        <div className="flex flex-col w-full">
+            <div className="flex md:w-full bg-white mb-4">
                 {memoizedFilterBar}
             </div>
-
-            {/* Mobile filter bar (top) - only visible on xs creens */}
-            <div className="md:hidden w-full">
-                {memoizedFilterBar}
-            </div>
-
-            {/* Map container */}
             <div className="flex flex-1 h-full">
                 {memoizedMapView}
             </div>

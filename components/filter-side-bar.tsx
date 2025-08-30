@@ -5,6 +5,7 @@ import { filters } from "@/lib/constants";
 import { FilterValues, FilterValue } from "@/types";
 import { CloseOutlined } from "@ant-design/icons";
 import { Button } from "antd";
+import { useMemo } from "react";
 
 interface FilterSideBarProps {
     onToggle: (isOpen: boolean) => void;
@@ -15,6 +16,8 @@ interface FilterSideBarProps {
     onSearch: (filters: FilterValues) => void;
 }
 
+const MOBILE_BREAKPOINT = 768;
+
 export default function FilterSideBar({
     onToggle,
     filterValues,
@@ -23,12 +26,32 @@ export default function FilterSideBar({
     onClearFilters,
     onSearch
 }: FilterSideBarProps) {
+
+    const animationVariants = useMemo(() => {
+        const isMobile = window.innerWidth < MOBILE_BREAKPOINT;
+        
+        return {
+            initial: {
+                x: isMobile ? "0%" : "-100%",
+                y: isMobile ? "-100%" : "0%"
+            },
+            animate: {
+                x: "0%",
+                y: "0%"
+            },
+            exit: {
+                x: isMobile ? "0%" : "-100%",
+                y: isMobile ? "-100%" : "0%"
+            }
+        };
+    }, []);
+
     return (
         <motion.div
-            className="absolute top-0 left-0 w-full h-full bg-white z-50 shadow-lg"
-            initial={{ y: "-100%" }}
-            animate={{ y: 0 }}
-            exit={{ y: "-100%" }}
+            className="absolute top-0 left-0 w-full md:w-1/3 h-3/4 sm:h-full bg-white z-50 shadow-lg"
+            initial={animationVariants.initial}
+            animate={animationVariants.animate}
+            exit={animationVariants.exit}
             transition={{
                 type: "spring",
                 stiffness: 300,
@@ -41,10 +64,10 @@ export default function FilterSideBar({
             >
                 <XIcon className="w-4 h-4" />
             </button>
-            <div className="p-8 py-16 flex flex-col gap-3 h-full justify-between">
-                <div className="flex flex-col gap-6">
-                    <h2 className="text-xl font-bold pb-4">Filters</h2>
-                    {filters.map((filter) => (
+            <div className="p-8 py-16 flex flex-col h-full justify-between">
+                <div className="flex flex-col gap-4">
+                    <h2 className="text-xl font-bold">More Filters</h2>
+                    {filters.slice(4).map((filter) => (
                         <FilterItem
                             key={filter.key}
                             filter={filter}

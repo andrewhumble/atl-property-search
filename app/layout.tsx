@@ -52,7 +52,7 @@ export default function RootLayout({
               rel="noopener noreferrer"
               title="Ant Design homepage"
             >
-              <span className="text-gray-600">Atlanta Property Search</span>
+              <span className="text-gray-600">500k+ properties scraped and indexed for easy search | Made by <a href="https://www.andrewhumble.dev/" rel="noopener noreferrer" target="_blank" className="text-blue-500">Andrew Humble</a>.</span>
             </a>
           </footer>
         </Providers>

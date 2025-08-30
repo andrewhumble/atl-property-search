@@ -3,16 +3,16 @@ import { useCallback } from "react";
 
 // Helper function to format appraised value
 const formatAppraisedValue = (value: number): string => {
-    if (value > 1000000) {
+    if (value > 100000) {
         const rounded = Math.round(value / 1000);
-        return rounded >= 1000 ? `${Math.round(rounded / 1000)}M` : `${rounded}k`;
+        return rounded >= 1000 ? `$${Math.round(rounded / 1000)}M` : `$${rounded}k`;
     } else {
         return value.toLocaleString();
     }
 };
 
 // Display text getter for range filters
-export const getRangeDisplayText = (filterKey: string, value: (number | null)[]): string => {
+export const getRangeDisplayText = (filterKey: string, value: (number | null)[], units?: string): string => {
     const [min, max] = value;
 
     // Both values are null or undefined
@@ -20,23 +20,19 @@ export const getRangeDisplayText = (filterKey: string, value: (number | null)[])
         return "Any";
     }
 
-    const formatter = filterKey === 'total_appraised_value' || filterKey === 'land_appraised_value'
-        ? formatAppraisedValue
-        : (val: number) => val.toString();
-
     // Both values are set
     if (min !== null && min !== undefined && max !== null && max !== undefined) {
-        return `${formatter(min)} - ${formatter(max)}`;
+        return `${formatAppraisedValue(min)} - ${formatAppraisedValue(max)} ${units}`;
     }
 
     // Only min is set
     if (min !== null && min !== undefined) {
-        return `${formatAppraisedValue(min)}+`;
+        return `${formatAppraisedValue(min)}+ ${units}`;
     }
 
     // Only max is set
     if (max !== null && max !== undefined) {
-        return `up to ${formatAppraisedValue(max)}`;
+        return `up to ${formatAppraisedValue(max)} ${units}`;
     }
 
     return "Any";

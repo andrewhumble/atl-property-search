@@ -1,13 +1,19 @@
 import { Segmented } from "antd"
 
 // Display text getter for selection filters
-export const getSelectionDisplayText = (options: { label: string, value: number }[], value: number): string => {
+export const getSelectionDisplayText = (options: { label: string, value: number }[], value: number, units?: string): string => {
   if (value === undefined) {
     return "Any";
   }
   
   const option = options.find(opt => opt.value === value);
-  return option ? option.label : "Any";
+  if (!option) return "Any";
+  
+  if (units) {
+    return `${option.value}+ ${units}`;
+  }
+  
+  return option.label;
 };
 
 export default function MultiSelectFilter({ options, value, onChange }: {

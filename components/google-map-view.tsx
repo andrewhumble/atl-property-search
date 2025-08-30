@@ -22,6 +22,7 @@ export default function GoogleMapView({ features, shouldAutoOpenPopup }: GoogleM
   const markersRef = useRef<google.maps.Marker[]>([]);
   const clustererRef = useRef<MarkerClusterer | null>(null);
   const infoWindowRef = useRef<google.maps.InfoWindow | null>(null);
+  const currentFeatureRef = useRef<PropertyFeature | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
   // Initialize Google Maps
@@ -88,6 +89,30 @@ export default function GoogleMapView({ features, shouldAutoOpenPopup }: GoogleM
           console.log('Map instance created successfully');
           mapInstanceRef.current = map;
           infoWindowRef.current = new google.maps.InfoWindow();
+          // When the info window DOM is ready, initialize the Save button state
+          infoWindowRef.current.addListener('domready', async () => {
+            const feature = currentFeatureRef.current;
+            if (!feature) return;
+            const id = feature.properties.parcel_id;
+            try {
+              const res = await fetch(`/api/saved?parcel_id=${encodeURIComponent(id)}`);
+              if (!res.ok) return;
+              const data = await res.json();
+              if (data?.saved) {
+                const btn = document.querySelector(
+                  `button[data-parcel-id="${CSS?.escape ? CSS.escape(id) : id}"]`
+                ) as HTMLButtonElement | null;
+                if (btn) {
+                  btn.disabled = true;
+                  btn.style.backgroundColor = '#16a34a';
+                  btn.textContent = '✓ Saved';
+                  btn.style.cursor = 'not-allowed';
+                }
+              }
+            } catch (_) {
+              // ignore
+            }
+          });
           console.log('Setting isLoading to false');
           setIsLoading(false);
         } else {
@@ -177,6 +202,7 @@ export default function GoogleMapView({ features, shouldAutoOpenPopup }: GoogleM
       // Add click listener
       marker.addListener('click', () => {
         if (infoWindowRef.current) {
+          currentFeatureRef.current = feature;
           infoWindowRef.current.setContent(infoContent);
           infoWindowRef.current.open(mapInstanceRef.current, marker);
         }
@@ -206,6 +232,7 @@ export default function GoogleMapView({ features, shouldAutoOpenPopup }: GoogleM
         if (infoWindowRef.current && markers[0]) {
           const feature = features[0];
           const infoContent = createPopupContent(feature);
+          currentFeatureRef.current = feature;
           infoWindowRef.current.setContent(infoContent);
           infoWindowRef.current.open(mapInstanceRef.current, markers[0]);
         }
@@ -238,7 +265,7 @@ export default function GoogleMapView({ features, shouldAutoOpenPopup }: GoogleM
     <div className="w-full h-full z-0">
       <div 
         ref={mapRef} 
-        className="w-full h-full rounded-2xl"
+        className="w-full h-full"
         style={{ minHeight: '400px' }}
       />
     </div>

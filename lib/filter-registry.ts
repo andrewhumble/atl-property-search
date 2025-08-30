@@ -42,7 +42,7 @@ export function loadFilterComponents(): Promise<void> {
                 component: RangeFilter,
                 getDisplayText: (filter, value) => {
                     if (filter.type === "range") {
-                        return getRangeDisplayText(filter.key, value as (number | null)[]);
+                        return getRangeDisplayText(filter.key, value as (number | null)[], filter.units);
                     }
                     return "Any";
                 },
@@ -62,12 +62,28 @@ export function loadFilterComponents(): Promise<void> {
                             value: value as (number | null)[],
                             onMinChange: (newValue: number | null) => {
                                 const values = value as (number | null)[];
-                                const updatedValues: (number | null)[] = [newValue, values[1]];
+                                const currentMax = values[1];
+                                
+                                // If new min value is greater than or equal to current max, set to null
+                                if (newValue !== null && currentMax !== null && newValue >= currentMax) {
+                                    onChange([null, currentMax]);
+                                    return;
+                                }
+                                
+                                const updatedValues: (number | null)[] = [newValue, currentMax];
                                 onChange(updatedValues);
                             },
                             onMaxChange: (newValue: number | null) => {
                                 const values = value as (number | null)[];
-                                const updatedValues: (number | null)[] = [values[0], newValue];
+                                const currentMin = values[0];
+                                
+                                // If new max value is less than or equal to current min, set to null
+                                if (newValue !== null && currentMin !== null && newValue <= currentMin) {
+                                    onChange([currentMin, null]);
+                                    return;
+                                }
+                                
+                                const updatedValues: (number | null)[] = [currentMin, newValue];
                                 onChange(updatedValues);
                             }
                         };
@@ -83,7 +99,7 @@ export function loadFilterComponents(): Promise<void> {
                 component: SliderFilter,
                 getDisplayText: (filter, value) => {
                     if (filter.type === "slider") {
-                        return getSliderDisplayText(filter.min, filter.max, value as [number, number]);
+                        return getSliderDisplayText(filter.min, filter.max, value as [number, number], filter.units);
                     }
                     return "Any";
                 },
@@ -115,7 +131,7 @@ export function loadFilterComponents(): Promise<void> {
                 component: MultiSelectFilter,
                 getDisplayText: (filter, value) => {
                     if (filter.type === "selection") {
-                        return getSelectionDisplayText(filter.options, value as number);
+                        return getSelectionDisplayText(filter.options, value as number, filter.units);
                     }
                     return "Any";
                 },
@@ -151,9 +167,7 @@ export function loadFilterComponents(): Promise<void> {
                 isDefault: (filter, value) => {
                     if (filter.type === "checkbox") {
                         const values = value as string[];
-                        const defaultValues = filter.defaultValue as string[];
-                        return values.length === defaultValues.length && 
-                               values.every((val, index) => val === defaultValues[index]);
+                        return !values || values.length === 0;
                     }
                     return false;
                 },

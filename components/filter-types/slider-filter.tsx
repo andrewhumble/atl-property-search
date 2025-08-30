@@ -2,7 +2,7 @@ import { Slider } from "antd";
 import { useCallback } from "react";
 
 // Display text getter for slider filters
-export const getSliderDisplayText = (min: number, max: number, value: [number, number]): string => {
+export const getSliderDisplayText = (min: number, max: number, value: [number, number], units?: string): string => {
   const [currentMin, currentMax] = value;
   
   // Check if values are at the extremes (default state)
@@ -12,7 +12,7 @@ export const getSliderDisplayText = (min: number, max: number, value: [number, n
   
   // Both values are set
   if (currentMin !== min || currentMax !== max) {
-    return `${currentMin} - ${currentMax}`;
+    return `${currentMin} - ${currentMax} ${units}`;
   }
   
   return "Any";

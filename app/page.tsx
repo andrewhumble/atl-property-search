@@ -10,20 +10,34 @@ import FilterSideBar from "@/components/filter-side-bar";
 import { AnimatePresence, motion } from "framer-motion";
 import { filters } from "@/lib/constants";
 import { getFilterComponent } from "@/lib/filter-registry";
+import { loadFilterValues, saveFilterValues, clearFilterValues } from "@/lib/session-storage";
 
 export default function Home() {
   const [initialFeatures, setInitialFeatures] = useState<PropertyFeature[]>([]);
   const [loading, setLoading] = useState(true);
   const [isSideBarOpen, setIsSideBarOpen] = useState(false);
   
-  // Initialize filter values to their default values
-  const [filterValues, setFilterValues] = useState<FilterValues>(
-    filters.reduce((acc, filter) => {
+  // Initialize filter values from session storage or defaults
+  const [filterValues, setFilterValues] = useState<FilterValues>(() => {
+    // Try to load from session storage first
+    const storedValues = loadFilterValues();
+    if (storedValues) {
+      return storedValues;
+    }
+    
+    // Fall back to default values
+    return filters.reduce((acc, filter) => {
       acc[filter.key] = filter.defaultValue;
       return acc;
-    }, {} as FilterValues)
-  );
+    }, {} as FilterValues);
+  });
+  
   const [hasNonDefaultFilters, setHasNonDefaultFilters] = useState(false);
+
+  // Save filter values to session storage whenever they change
+  useEffect(() => {
+    saveFilterValues(filterValues);
+  }, [filterValues]);
 
   const handleSearch = useCallback(async (filters: FilterValues) => {
     setLoading(true);
@@ -52,6 +66,8 @@ export default function Home() {
       return acc;
     }, {} as FilterValues);
     setFilterValues(clearedValues);
+    // Also clear from session storage
+    clearFilterValues();
   }, []);
 
   return (
@@ -79,7 +95,7 @@ export default function Home() {
         )}
       </AnimatePresence>
       <Navbar onSearch={handleSearch} />
-      <div className="flex flex-1 px-4 sm:px-12 lg:px-16">
+      <div className="flex flex-1">
         <MapContainer 
           initialFeatures={initialFeatures} 
           onToggle={() => setIsSideBarOpen(!isSideBarOpen)}

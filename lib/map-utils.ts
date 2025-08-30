@@ -49,10 +49,11 @@ export function createPopupContent(feature: PropertyFeature) {
           </tr>
         </tbody>
       </table>
-      <div style="margin-top: 6px; display: flex; gap: 8px;">
-        <a style="color: #2563eb; text-decoration: underline;" href="https://www.google.com/maps/place/${encodeURIComponent(feature.properties.address)}+Atlanta,+GA" target="_blank">🗺️ Maps</a>
-        <a style="color: #2563eb; text-decoration: underline;" href="https://www.google.com/search?q=${encodeURIComponent(feature.properties.address)}+site%3Azillow.com" target="_blank">🏠 Zillow</a>
-        ${feature.properties.qpublic_url ? `<a style="color: #2563eb; text-decoration: underline;" href="${feature.properties.qpublic_url}" target="_blank">📋 QPublic</a>` : ''}
+      <div style="margin-top: 6px; display: flex; gap: 8px; align-items: center;">
+      <a style="color: #2563eb; text-decoration: underline;" href="https://www.google.com/maps/place/${encodeURIComponent(feature.properties.address)}+Atlanta,+GA" target="_blank">🗺️ Maps</a>
+      <a style="color: #2563eb; text-decoration: underline;" href="https://www.google.com/search?q=${encodeURIComponent(feature.properties.address)}+site%3Azillow.com" target="_blank">🏠 Zillow</a>
+      ${feature.properties.qpublic_url ? `<a style="color: #2563eb; text-decoration: underline;" href="${feature.properties.qpublic_url}" target="_blank">📋 QPublic</a>` : ''}
+      <button type="button" data-parcel-id="${feature.properties.parcel_id}" style="padding: 4px 8px; background-color: #2563eb; color: #fff; border: none; border-radius: 4px; cursor: pointer;" onclick="(async function(el){ try { const id = el.dataset.parcelId; const res = await fetch('/api/saved', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ parcel_id: id }) }); if (!res.ok) { console.error('Save failed', await res.text()); } else { el.style.backgroundColor = '#16a34a'; el.textContent = '✓ Saved'; console.log('Saved parcel', id); } } catch (e) { console.error('Save error', e); } })(this)">💾 Save</button>
       </div>
     </div>
   `
