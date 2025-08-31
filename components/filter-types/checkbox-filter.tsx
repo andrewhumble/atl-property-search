@@ -5,14 +5,8 @@ export const getCheckboxDisplayText = (options: { label: string, value: string }
   if (!value || value.length === 0) {
     return "Any";
   }
-  
-  if (value.length === 1) {
-    const option = options.find(opt => opt.value === value[0]);
-    if (!option) return "Any";
-    return option.label;
-  }
-  
-  return `${value.length} selected`;
+
+  return options[0].label;
 };
 
 export default function CheckboxFilter({ 

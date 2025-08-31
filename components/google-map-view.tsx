@@ -8,6 +8,7 @@ interface GoogleMapViewProps {
   features: PropertyFeature[];
   shouldAutoOpenPopup: boolean;
   isDataLoading?: boolean;
+  isSearching?: boolean;
 }
 
 const GEORGIA_BOUNDS = {
@@ -17,13 +18,14 @@ const GEORGIA_BOUNDS = {
   east: -82.500,
 };
 
-export default function GoogleMapView({ features, shouldAutoOpenPopup, isDataLoading }: GoogleMapViewProps) {
+export default function GoogleMapView({ features, shouldAutoOpenPopup, isDataLoading, isSearching }: GoogleMapViewProps) {
   const mapRef = useRef<HTMLDivElement>(null);
   const mapInstanceRef = useRef<google.maps.Map | null>(null);
   const markersRef = useRef<google.maps.Marker[]>([]);
   const clustererRef = useRef<MarkerClusterer | null>(null);
   const infoWindowRef = useRef<google.maps.InfoWindow | null>(null);
   const currentFeatureRef = useRef<PropertyFeature | null>(null);
+  const lastSearchBoundsRef = useRef<google.maps.LatLngBounds | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
   // Initialize Google Maps
@@ -169,6 +171,10 @@ export default function GoogleMapView({ features, shouldAutoOpenPopup, isDataLoa
   useEffect(() => {
     if (!mapInstanceRef.current || !infoWindowRef.current) return;
 
+    // Store current map state before clearing markers
+    const currentCenter = mapInstanceRef.current.getCenter();
+    const currentZoom = mapInstanceRef.current.getZoom();
+
     // Clear existing markers and clusterer
     if (clustererRef.current) {
       clustererRef.current.clearMarkers();
@@ -240,13 +246,33 @@ export default function GoogleMapView({ features, shouldAutoOpenPopup, isDataLoa
       }, 100);
     }
 
-    // Fit bounds if multiple markers
-    if (markers.length > 1) {
-      const bounds = new google.maps.LatLngBounds();
-      markers.forEach(marker => {
-        bounds.extend(marker.getPosition()!);
-      });
-      mapInstanceRef.current.fitBounds(bounds);
+    // Handle map view based on results
+    if (markers.length === 0) {
+      // No results - maintain current view if we have one, otherwise stay at default
+      if (currentCenter && currentZoom && !isSearching) {
+        mapInstanceRef.current.setCenter(currentCenter);
+        mapInstanceRef.current.setZoom(currentZoom);
+      } else if (isSearching && lastSearchBoundsRef.current) {
+        // If we're searching and have previous bounds, maintain that view
+        mapInstanceRef.current?.fitBounds(lastSearchBoundsRef.current);
+      }
+    } else if (markers.length === 1) {
+      // Single result - center on the marker with appropriate zoom
+      setTimeout(() => {
+        const marker = markers[0];
+        mapInstanceRef.current?.setCenter(marker.getPosition()!);
+        mapInstanceRef.current?.setZoom(16); // Close zoom for single property
+      }, 100);
+    } else {
+      // Multiple results - fit bounds to show all markers
+      setTimeout(() => {
+        const bounds = new google.maps.LatLngBounds();
+        markers.forEach(marker => {
+          bounds.extend(marker.getPosition()!);
+        });
+        lastSearchBoundsRef.current = bounds;
+        mapInstanceRef.current?.fitBounds(bounds);
+      }, 100);
     }
 
   }, [features, shouldAutoOpenPopup]);

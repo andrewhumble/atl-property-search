@@ -33,6 +33,7 @@ export default function MapContainer({
     const [features, setFeatures] = useState<PropertyFeature[]>(initialFeatures);
     const [loading, setLoading] = useState(false);
     const [shouldAutoOpenPopup, setShouldAutoOpenPopup] = useState(false);
+    const [isSearching, setIsSearching] = useState(false);
     const combinedLoading = loading || !!externalLoading;
 
     useEffect(() => {
@@ -40,10 +41,12 @@ export default function MapContainer({
         if (initialFeatures.length === 1) {
             setShouldAutoOpenPopup(true);
         }
+        // Don't set isSearching to true for initial features
     }, [initialFeatures]);
 
     const handleSearch = useCallback(async (filters: FilterValues) => {
         setLoading(true);
+        setIsSearching(true);
         setFeatures([]);
         setShouldAutoOpenPopup(false);
 
@@ -55,13 +58,19 @@ export default function MapContainer({
             console.error('Error fetching filtered properties:', error);
         } finally {
             setLoading(false);
+            setIsSearching(false);
         }
     }, []);
 
     // Memoize the MapView component to prevent unnecessary re-renders
     const memoizedMapView = useMemo(() => (
-        <MapView features={features} shouldAutoOpenPopup={shouldAutoOpenPopup} isDataLoading={combinedLoading} />
-    ), [features, shouldAutoOpenPopup, combinedLoading]);
+        <MapView 
+            features={features} 
+            shouldAutoOpenPopup={shouldAutoOpenPopup} 
+            isDataLoading={combinedLoading}
+            isSearching={isSearching}
+        />
+    ), [features, shouldAutoOpenPopup, combinedLoading, isSearching]);
 
     // Memoize the FilterBar component to prevent unnecessary re-renders
     const memoizedFilterBar = useMemo(() => (

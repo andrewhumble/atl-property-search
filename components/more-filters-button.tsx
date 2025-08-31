@@ -1,4 +1,3 @@
-import { DownOutlined } from "@ant-design/icons"
 import { Button, Dropdown } from "antd"
 import { useEffect, useState } from "react"
 import FilterItem from "./filter-item";
@@ -6,11 +5,11 @@ import { filters } from "@/lib/constants";
 import { FilterValues } from "@/types";
 import { FilterValue } from "@/types";
 import { loadFilterComponents, getFilterComponent } from "@/lib/filter-registry";
+import { SlidersHorizontalIcon } from "lucide-react";
 
 export default function MoreFiltersButton({ filterValues, onFilterChange }: { filterValues: FilterValues, onFilterChange: (filterKey: string, newValue: FilterValue) => void }) {
     const [isOpen, setIsOpen] = useState(false);
     const [isDefault, setIsDefault] = useState<boolean>(true);
-    const [displayText, setDisplayText] = useState("More Filters");
 
     // Ensure filter components are available
     useEffect(() => {
@@ -79,8 +78,8 @@ export default function MoreFiltersButton({ filterValues, onFilterChange }: { fi
                     variant="filled"
                     color={`${isDefault ? "default" : "primary"}`}
                 >
-                    <span className="flex-1 text-left text-md">{displayText}</span>
-                    <DownOutlined className="ml-auto" />
+                    <SlidersHorizontalIcon className="size-4" />
+                    <span className="text-md">More Filters</span>
                 </Button>
             </Dropdown>
         </div>

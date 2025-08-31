@@ -1,6 +1,6 @@
 import { Filter } from "@/types";
 import { useState, useEffect, useCallback } from "react";
-import { Dropdown, Button } from "antd";
+import { Dropdown, Button, Checkbox } from "antd";
 import { DownOutlined } from "@ant-design/icons";
 import { FilterValue } from "@/types";
 import { loadFilterComponents, getFilterComponent } from "@/lib/filter-registry";
@@ -9,12 +9,12 @@ export default function FilterItem({
     filter,
     value,
     onChange,
-    btnVariant = "outlined"
+    btnVariant = "outlined",
 }: {
     filter: Filter,
     value: FilterValue,
     onChange?: (newValue: FilterValue) => void,
-    btnVariant?: "outlined" | "text"
+    btnVariant?: "outlined" | "text",
 }) {
     const [isOpen, setIsOpen] = useState(false);
     const [displayText, setDisplayText] = useState("Any");
@@ -74,22 +74,38 @@ export default function FilterItem({
 
     return (
         <div className="flex flex-col">
-            <Dropdown
-                overlay={dropdownContent}
-                trigger={['click']}
-                open={isOpen}
-                onOpenChange={setIsOpen}
-                placement="bottomLeft"
-            >
+            {filter.type !== "checkbox" && (
+                <Dropdown
+                    overlay={dropdownContent}
+                    trigger={['click']}
+                    open={isOpen}
+                    onOpenChange={setIsOpen}
+                    placement="bottomLeft"
+                >
+                    <Button
+                        className="flex items-center justify-between w-full text-gray-700 rounded-lg"
+                        variant={btnVariant}
+                        color={`${isDefault(filter, value) ? "default" : "primary"}`}
+                    >
+                        <span className="flex-1 text-left text-md">{displayText}</span>
+                        <DownOutlined className="ml-auto" />
+                    </Button>
+                </Dropdown>
+            )}
+            {filter.type === "checkbox" && (
                 <Button
                     className="flex items-center justify-between w-full text-gray-700 rounded-lg"
-                    variant={`${isDefault(filter, value) ? btnVariant : "solid"}`}
+                    variant={btnVariant}
                     color={`${isDefault(filter, value) ? "default" : "primary"}`}
+                    onClick={() => handleChange(!(value as boolean))}
                 >
                     <span className="flex-1 text-left text-md">{displayText}</span>
-                    <DownOutlined className="ml-auto" />
+                    <Checkbox
+                        checked={value as boolean}
+                        onChange={(e) => handleChange(e.target.checked)}
+                    />
                 </Button>
-            </Dropdown>
+            )}
         </div>
     );
 }

@@ -86,7 +86,7 @@ export const filters: Filter[] = [
         units: "land value"
     },
     {
-        label: "Owned by Landlord?",
+        label: "Owned by Landlord",
         key: "multiple_property_owner",
         type: "checkbox",
         options: [
