@@ -46,7 +46,7 @@ export default function GoogleMapView({ features, shouldAutoOpenPopup, isDataLoa
       }
 
       isInitialized = true;
-      
+
       // Clean up observer and timeout
       if (observer) {
         observer.disconnect();
@@ -69,7 +69,7 @@ export default function GoogleMapView({ features, shouldAutoOpenPopup, isDataLoa
         if (mapRef.current) {
           console.log('Creating map instance...');
           const map = new google.maps.Map(mapRef.current, {
-            center: { lat: 33.769, lng: -84.388 }, // Atlanta,
+            center: { lat: 33.769, lng: -84.388 }, // Atlanta
             restriction: {
               latLngBounds: GEORGIA_BOUNDS,
               strictBounds: false,
